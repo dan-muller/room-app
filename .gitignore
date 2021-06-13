@@ -117,3 +117,5 @@ cdk.out
 !frontend/**/*.js
 
 !jest.config.js
+
+.idea
