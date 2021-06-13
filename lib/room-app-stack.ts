@@ -129,9 +129,12 @@ export class RoomAppStack extends cdk.Stack {
 
     distro.addBehavior(
       `/${stageName}/*`,
-      new origins.HttpOrigin(`${webSocketApi.apiEndpoint}.${stageName}`, {
-        protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-      }),
+      new origins.HttpOrigin(
+        `${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}`,
+        {
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }
+      ),
       {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
