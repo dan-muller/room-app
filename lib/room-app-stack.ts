@@ -142,7 +142,14 @@ export class RoomAppStack extends cdk.Stack {
         originRequestPolicy: new cloudfront.OriginRequestPolicy(
           this,
           "WSOriginRequestPolicy",
-          { headerBehavior: cloudfront.OriginRequestHeaderBehavior.all() }
+          {
+            headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
+              "Sec-WebSocket-Extensions",
+              "Sec-WebSocket-Key",
+              "Sec-WebSocket-Version",
+              "Upgrade"
+            ),
+          }
         ),
       }
     );
