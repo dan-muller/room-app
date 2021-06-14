@@ -146,8 +146,7 @@ export class RoomAppStack extends cdk.Stack {
             headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
               "Sec-WebSocket-Extensions",
               "Sec-WebSocket-Key",
-              "Sec-WebSocket-Version",
-              "Upgrade"
+              "Sec-WebSocket-Version"
             ),
           }
         ),
