@@ -139,6 +139,11 @@ export class RoomAppStack extends cdk.Stack {
         allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        originRequestPolicy: new cloudfront.OriginRequestPolicy(
+          this,
+          "WSOriginRequestPolicy",
+          { headerBehavior: cloudfront.OriginRequestHeaderBehavior.all() }
+        ),
       }
     );
 
