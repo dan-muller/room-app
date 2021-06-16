@@ -1,36 +1,35 @@
 import "./App.css";
 import React from "react";
 
-function useBody() {
+const App = () => {
   const [body, setBody] = React.useState(["Hello World"]);
   console.debug("Body:", body);
   const url = `wss://${window.location.host}/ws/`;
   console.debug("WS URL:", url);
   const ws = new WebSocket(url);
   ws.onmessage = (event) => {
-    console.debug(event);
+    console.debug("onmessage", event);
     setBody([...body, event]);
   };
-  ws.onopen = (a, b, c) => {
-    console.debug(a, b, c);
+  ws.onopen = (event) => {
+    console.debug("onopen", event);
     ws.send("Hello WS, I have connected.");
   };
-  return (
-    <>
-      {body.map((text) => (
-        <div>{text}</div>
-      ))}
-    </>
-  );
-}
-
-function App() {
-  const body = useBody();
+  ws.onclose = (event) => {
+    console.debug("onclose", event);
+  };
+  ws.onerror = (event) => {
+    console.debug("onerror", event);
+  };
   return (
     <div className="App">
-      <body>{body}</body>
+      <body>
+        {body.map((text) => (
+          <div>{text}</div>
+        ))}
+      </body>
     </div>
   );
-}
+};
 
 export default App;
