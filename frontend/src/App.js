@@ -11,8 +11,8 @@ function useBody() {
     console.debug(event);
     setBody([...body, event]);
   };
-  ws.onopen = (ws, event) => {
-    console.debug(event);
+  ws.onopen = (a, b, c) => {
+    console.debug(a, b, c);
     ws.send("Hello WS, I have connected.");
   };
   return (
