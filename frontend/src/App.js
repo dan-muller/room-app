@@ -4,7 +4,8 @@ import React from "react";
 function useBody() {
   const [body, setBody] = React.useState(["Hello World"]);
   console.debug("Body:", body);
-  const url = window.location.href.replace("https", "ws") + "/ws/";
+  // const url = window.location.href.replace("https", "wss") + "/ws/";
+  const url = `wss://${window.location.host}/ws/`;
   console.debug("WS URL:", url);
   const ws = new WebSocket(url);
   ws.onmessage = (event) => {
