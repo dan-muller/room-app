@@ -1,6 +1,5 @@
 import * as cdk from "@aws-cdk/core";
 import * as lambda from "@aws-cdk/aws-lambda";
-import * as apigw from "@aws-cdk/aws-apigateway";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as s3 from "@aws-cdk/aws-s3";
@@ -37,6 +36,8 @@ export class RoomAppStack extends cdk.Stack {
       googleClientSecret,
     } = props;
 
+    const stageName = "ws";
+
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: "index.connect",
@@ -47,7 +48,7 @@ export class RoomAppStack extends cdk.Stack {
       },
       timeout: cdk.Duration.seconds(20),
     });
-    const disconnectFn = new lambda.Function(this, "DisonnectionHandler", {
+    const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: "index.disconnect",
       code: lambda.Code.fromAsset("backend/connect"),
@@ -66,10 +67,6 @@ export class RoomAppStack extends cdk.Stack {
         NODE_ENV: "production",
       },
       timeout: cdk.Duration.seconds(20),
-    });
-
-    const lambdaApi = new apigw.LambdaRestApi(this, "Endpoint", {
-      handler: defaultFn,
     });
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
@@ -92,7 +89,7 @@ export class RoomAppStack extends cdk.Stack {
 
     new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
-      stageName: "prod",
+      stageName,
       autoDeploy: true,
     });
 
@@ -130,11 +127,34 @@ export class RoomAppStack extends cdk.Stack {
 
     const distro = new cloudfront.Distribution(this, "Distro", distroProps);
 
+    distro.addBehavior(
+      `/${stageName}/*`,
+      new origins.HttpOrigin(
+        `${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}`,
+        {
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+        }
+      ),
+      {
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        originRequestPolicy: new cloudfront.OriginRequestPolicy(
+          this,
+          "WSOriginRequestPolicy",
+          {
+            headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
+              "Sec-WebSocket-Extensions",
+              "Sec-WebSocket-Key",
+              "Sec-WebSocket-Version"
+            ),
+          }
+        ),
+      }
+    );
+
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,
-    });
-    new cdk.CfnOutput(this, "lambdaApiUrl", {
-      value: lambdaApi.url,
     });
     new cdk.CfnOutput(this, "DistributionDomainName", {
       value: distro.distributionDomainName,

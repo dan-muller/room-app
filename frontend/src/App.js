@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import React from "react";
 
-function App() {
+const App = () => {
+  const [body, setBody] = React.useState(["Hello World"]);
+  console.debug("Body:", body);
+  const url = `wss://${window.location.host}/ws/`;
+  console.debug("WS URL:", url);
+  const ws = new WebSocket(url);
+  ws.onmessage = (event) => {
+    console.debug("onmessage", event);
+    setBody([...body, event]);
+  };
+  ws.onopen = (event) => {
+    console.debug("onopen", event);
+    ws.send("Hello WS, I have connected.");
+  };
+  ws.onclose = (event) => {
+    console.debug("onclose", event);
+  };
+  ws.onerror = (event) => {
+    console.debug("onerror", event);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <body>
+        {body.map((text) => (
+          <div>{text}</div>
+        ))}
+      </body>
     </div>
   );
-}
+};
 
 export default App;
