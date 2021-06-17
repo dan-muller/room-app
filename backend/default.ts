@@ -1,39 +1,7 @@
 import { Handler } from "aws-lambda";
 import { ApiGatewayManagementApi } from "aws-sdk";
 
-import Connections from "../../common/infra/Connections";
-
-export const connectHandler: Handler = async (event) => {
-  try {
-    await Connections.Client.put(event.requestContext.connectionId);
-    return {
-      statusCode: 200,
-      body: "Connected.",
-    };
-  } catch (e) {
-    console.error("error!", e);
-    return {
-      statusCode: 501,
-      body: "Failed to connect: " + JSON.stringify(e),
-    };
-  }
-};
-
-export const disconnectHandler: Handler = async (event) => {
-  try {
-    await Connections.Client.delete(event.requestContext.connectionId);
-    return {
-      statusCode: 200,
-      body: "Disconnected.",
-    };
-  } catch (e) {
-    console.error("error!", e);
-    return {
-      statusCode: 501,
-      body: "Failed to disconnect: " + JSON.stringify(e),
-    };
-  }
-};
+import Connections from "../common/infra/Connections";
 
 export const defaultHandler: Handler = async (event) => {
   const api = new ApiGatewayManagementApi({
@@ -64,3 +32,5 @@ export const defaultHandler: Handler = async (event) => {
     return { statusCode: 500, body: e.stack };
   }
 };
+
+export default defaultHandler;

@@ -1,7 +1,6 @@
 import * as acm from "@aws-cdk/aws-certificatemanager";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as aws from "@aws-cdk/core";
 import * as cdk from "@aws-cdk/core";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
@@ -9,6 +8,7 @@ import * as lambda from "@aws-cdk/aws-lambda";
 import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
 import * as s3 from "@aws-cdk/aws-s3";
+
 import Connections from "../common/infra/Connections";
 
 export interface RoomAppProps extends cdk.StackProps {
@@ -43,8 +43,8 @@ export class RoomAppStack extends cdk.Stack {
 
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.connectHandler",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "connect",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
@@ -53,8 +53,8 @@ export class RoomAppStack extends cdk.Stack {
     });
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.disconnectHandler",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "disconnect",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
@@ -63,8 +63,8 @@ export class RoomAppStack extends cdk.Stack {
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.defaultHandler",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "default",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
