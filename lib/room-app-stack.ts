@@ -1,12 +1,15 @@
-import * as cdk from "@aws-cdk/core";
-import * as lambda from "@aws-cdk/aws-lambda";
+import * as acm from "@aws-cdk/aws-certificatemanager";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as s3 from "@aws-cdk/aws-s3";
+import * as aws from "@aws-cdk/core";
+import * as cdk from "@aws-cdk/core";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as acm from "@aws-cdk/aws-certificatemanager";
+import * as dynamodb from "@aws-cdk/aws-dynamodb";
+import * as lambda from "@aws-cdk/aws-lambda";
 import * as origins from "@aws-cdk/aws-cloudfront-origins";
+import * as route53 from "@aws-cdk/aws-route53";
+import * as s3 from "@aws-cdk/aws-s3";
+import Connections from "../common/infra/Connections";
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
@@ -152,6 +155,8 @@ export class RoomAppStack extends cdk.Stack {
         ),
       }
     );
+
+    new dynamodb.Table(this, Connections.TableName, Connections.TableProps);
 
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,
