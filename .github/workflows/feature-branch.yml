@@ -32,8 +32,8 @@ jobs:
         run: |
           npm install
 
-      - name: Install backend/connect
-        working-directory: backend/connect
+      - name: Install backend
+        working-directory: backend
         run: |
           npm install
 
@@ -46,14 +46,19 @@ jobs:
         run: |
           npm run build
 
-      - name: Test frontend
-        working-directory: frontend
+      - name: Build backend
+        working-directory: backend
         run: |
-          npm test
+          npm run build
 
       - name: Test
         run: |
           npm run test -- test
+
+      - name: Test frontend
+        working-directory: frontend
+        run: |
+          npm test
 
       - name: Identify dev account and region
         env:
