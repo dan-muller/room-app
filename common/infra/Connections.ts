@@ -15,15 +15,20 @@ namespace Connections {
     removalPolicy: aws.RemovalPolicy.DESTROY,
   };
 
-  export type ConnectionsItem = {
-    ConnectionId: string;
-    Data: any;
-    Timestamp: Date;
-    Event: "CONNECT" | "DISCONNECT" | "DEFAULT";
-  };
+  export const Client = {
+    put: async (ConnectionId: string) =>
+      new DocumentClient().put({ TableName, Item: { ConnectionId } }).promise(),
 
-  export const put = async (Item: ConnectionsItem) =>
-    new DocumentClient().put({ TableName, Item }).promise();
+    delete: async (ConnectionId: string) =>
+      new DocumentClient()
+        .delete({ TableName, Key: { ConnectionId } })
+        .promise(),
+
+    scan: async () =>
+      new DocumentClient()
+        .scan({ TableName, ProjectionExpression: "Id" })
+        .promise(),
+  };
 }
 
 export default Connections;
