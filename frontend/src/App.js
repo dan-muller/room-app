@@ -1,5 +1,18 @@
 import "./App.css";
 import React from "react";
+import styled from "styled-components/macro";
+
+const Input = styled.input`
+  width: 250px;
+  display: flex;
+  border: 1px dimgray;
+`;
+
+const Button = styled.button`
+  width: 250px;
+  display: flex;
+  border: 1px dimgray;
+`;
 
 const App = () => {
   const [body, setBody] = React.useState([]);
@@ -26,11 +39,13 @@ const App = () => {
   return (
     <div className="App">
       <body>
-        <input
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-        />
-        <button onClick={() => ws.send(input)} />
+        <div>
+          <Input
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+          />
+          <Button onClick={() => ws.send(input)}>Send</Button>
+        </div>
         {body.map((text) => (
           <div>{text}</div>
         ))}
