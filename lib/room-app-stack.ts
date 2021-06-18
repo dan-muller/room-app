@@ -9,7 +9,7 @@ import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
 import * as s3 from "@aws-cdk/aws-s3";
 
-import Connections from "../common/infra/Connections";
+import Connections from "../common/Connections";
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
@@ -68,6 +68,7 @@ export class RoomAppStack extends cdk.Stack {
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        ENDPOINT: "https://d1vy5lwn12jrv5.cloudfront.net/ws/",
       },
       timeout: cdk.Duration.seconds(20),
     });

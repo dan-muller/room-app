@@ -10,23 +10,28 @@ namespace Connections {
       name: "ConnectionId",
       type: cdk.AttributeType.STRING,
     },
-    sortKey: { name: "Timestamp", type: cdk.AttributeType.STRING },
+    sortKey: { name: "Active", type: cdk.AttributeType.BINARY },
     billingMode: cdk.BillingMode.PAY_PER_REQUEST,
     removalPolicy: aws.RemovalPolicy.DESTROY,
   };
 
   export const Client = {
-    put: async (ConnectionId: string) =>
-      new DocumentClient().put({ TableName, Item: { ConnectionId } }).promise(),
-
-    delete: async (ConnectionId: string) =>
+    connect: async (ConnectionId: string) =>
       new DocumentClient()
-        .delete({ TableName, Key: { ConnectionId } })
+        .put({ TableName, Item: { ConnectionId, Active: 1 } })
         .promise(),
 
-    scan: async () =>
+    disconnect: async (ConnectionId: string) =>
       new DocumentClient()
-        .scan({ TableName, ProjectionExpression: "Id" })
+        .put({ TableName, Item: { ConnectionId, Active: 0 } })
+        .promise(),
+
+    listConnected: async () =>
+      new DocumentClient()
+        .query({
+          TableName,
+          KeyConditionExpression: "Active = 1",
+        })
         .promise(),
   };
 }
