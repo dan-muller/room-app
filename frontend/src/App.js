@@ -2,7 +2,7 @@ import "./App.css";
 import React from "react";
 
 const App = () => {
-  const [body, setBody] = React.useState(["Hello World"]);
+  const [body, setBody] = React.useState([]);
   console.debug("Body:", body);
   const url = `wss://${window.location.host}/ws/`;
   console.debug("WS URL:", url);
@@ -21,9 +21,16 @@ const App = () => {
   ws.onerror = (event) => {
     console.debug("onerror", event);
   };
+  const [input, setInput] = React.useState("Hello World");
+  console.log("input", input);
   return (
     <div className="App">
       <body>
+        <input
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+        />
+        <button onClick={() => ws.send(input)} />
         {body.map((text) => (
           <div>{text}</div>
         ))}
