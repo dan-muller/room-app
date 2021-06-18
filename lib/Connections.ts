@@ -3,8 +3,8 @@ import * as cdk from "@aws-cdk/aws-dynamodb";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
 
 namespace Connections {
-  export const TableName: string = "Connections";
-  export const TableProps: cdk.TableProps = {
+  const TableName: string = "Connections";
+  const TableProps: cdk.TableProps = {
     partitionKey: {
       name: "ConnectionId",
       type: cdk.AttributeType.STRING,
