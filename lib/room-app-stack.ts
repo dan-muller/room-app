@@ -9,7 +9,7 @@ import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
 import * as s3 from "@aws-cdk/aws-s3";
 
-import Connections from "../common/Connections";
+import Connections from "./Connections";
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
@@ -27,17 +27,7 @@ export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
     super(scope, id, props);
 
-    const {
-      fromAddress,
-      domainName,
-      zoneId,
-      facebookAppId,
-      facebookAppSecret,
-      amazonClientId,
-      amazonClientSecret,
-      googleClientId,
-      googleClientSecret,
-    } = props;
+    const { domainName, zoneId } = props;
 
     const stageName = "ws";
 
@@ -91,7 +81,7 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    new apigwv2.WebSocketStage(this, "ProdStage", {
+    const ws = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
       autoDeploy: true,
@@ -157,7 +147,7 @@ export class RoomAppStack extends cdk.Stack {
       }
     );
 
-    new dynamodb.Table(this, Connections.TableName, Connections.TableProps);
+    new Connections.Table(this);
 
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,

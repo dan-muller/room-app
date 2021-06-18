@@ -1,11 +1,30 @@
 import { Handler } from "aws-lambda";
-import { ApiGatewayManagementApi } from "aws-sdk";
+import { ApiGatewayManagementApi, DynamoDB } from "aws-sdk";
 
-import Connections from "../common/Connections";
+const TableName = "Connections";
+const Client = {
+  connect: async (ConnectionId: string) =>
+    new DynamoDB.DocumentClient()
+      .put({ TableName, Item: { ConnectionId, Active: 1 } })
+      .promise(),
+
+  disconnect: async (ConnectionId: string) =>
+    new DynamoDB.DocumentClient()
+      .put({ TableName, Item: { ConnectionId, Active: 0 } })
+      .promise(),
+
+  listConnected: async () =>
+    new DynamoDB.DocumentClient()
+      .query({
+        TableName,
+        KeyConditionExpression: "Active = 1",
+      })
+      .promise(),
+};
 
 export const connectHandler: Handler = async (event) => {
   try {
-    await Connections.Client.connect(event.requestContext.connectionId);
+    await Client.connect(event.requestContext.connectionId);
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
     console.error("error!", e);
@@ -18,7 +37,7 @@ export const connectHandler: Handler = async (event) => {
 
 export const disconnectHandler: Handler = async (event) => {
   try {
-    await Connections.Client.disconnect(event.requestContext.connectionId);
+    await Client.disconnect(event.requestContext.connectionId);
     return { statusCode: 200, body: "Disconnected." };
   } catch (e) {
     console.error("error!", e);
@@ -33,7 +52,7 @@ export const defaultHandler: Handler = async (event) => {
   try {
     const api = new ApiGatewayManagementApi({ endpoint: process.env.ENDPOINT });
 
-    const connections = await Connections.Client.listConnected();
+    const connections = await Client.listConnected();
 
     console.log("Scanning connections: ", connections);
 
