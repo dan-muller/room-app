@@ -5,19 +5,22 @@ const TableName = process.env.CONNECTIONS_TABLE_NAME || "Connections";
 const Client = {
   connect: async (ConnectionId: string) =>
     new DynamoDB.DocumentClient()
-      .put({ TableName, Item: { ConnectionId, Active: 1 } })
+      .put({ TableName, Item: { ConnectionId, Active: "Yes" } })
       .promise(),
 
   disconnect: async (ConnectionId: string) =>
     new DynamoDB.DocumentClient()
-      .put({ TableName, Item: { ConnectionId, Active: 0 } })
+      .put({ TableName, Item: { ConnectionId, Active: "No" } })
       .promise(),
 
   listConnected: async () =>
     new DynamoDB.DocumentClient()
       .query({
         TableName,
-        KeyConditionExpression: "Active = 1",
+        KeyConditionExpression: "Active = :a",
+        ExpressionAttributeValues: {
+          ":a": "Yes",
+        },
       })
       .promise(),
 };

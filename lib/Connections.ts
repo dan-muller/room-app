@@ -9,7 +9,7 @@ namespace Connections {
       name: "ConnectionId",
       type: cdk.AttributeType.STRING,
     },
-    sortKey: { name: "Active", type: cdk.AttributeType.BINARY },
+    sortKey: { name: "Active", type: cdk.AttributeType.STRING },
     billingMode: cdk.BillingMode.PAY_PER_REQUEST,
     removalPolicy: aws.RemovalPolicy.DESTROY,
   };
