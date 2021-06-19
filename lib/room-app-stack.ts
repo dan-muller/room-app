@@ -147,9 +147,9 @@ export class RoomAppStack extends cdk.Stack {
     );
 
     const connectionsTable = new Connections.Table(this);
-    connectionsTable.grantReadWriteData(connectFn);
-    connectionsTable.grantReadWriteData(disconnectFn);
-    connectionsTable.grantReadWriteData(defaultFn);
+    connectionsTable.grantFullAccess(connectFn);
+    connectionsTable.grantFullAccess(disconnectFn);
+    connectionsTable.grantFullAccess(defaultFn);
 
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,
