@@ -54,7 +54,9 @@ export const disconnectHandler: Handler = async (event) => {
 
 export const defaultHandler: Handler = async (event) => {
   try {
-    const api = new ApiGatewayManagementApi({ endpoint: process.env.ENDPOINT });
+    // const api = new ApiGatewayManagementApi({ endpoint: process.env.ENDPOINT });
+
+    console.log("Api endpoint: ", process.env.ENDPOINT);
 
     const connections = await Client.listConnected();
 
