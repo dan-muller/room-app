@@ -30,6 +30,8 @@ export class RoomAppStack extends cdk.Stack {
 
     const stageName = "ws";
 
+    const connectionsTable = new Connections.Table(this);
+
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: "connections.connectHandler",
@@ -37,6 +39,7 @@ export class RoomAppStack extends cdk.Stack {
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
@@ -47,6 +50,7 @@ export class RoomAppStack extends cdk.Stack {
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
@@ -58,6 +62,7 @@ export class RoomAppStack extends cdk.Stack {
       environment: {
         NODE_ENV: "production",
         ENDPOINT: "https://d1vy5lwn12jrv5.cloudfront.net/ws/",
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
@@ -146,7 +151,6 @@ export class RoomAppStack extends cdk.Stack {
       }
     );
 
-    const connectionsTable = new Connections.Table(this);
     connectionsTable.grantFullAccess(connectFn);
     connectionsTable.grantFullAccess(disconnectFn);
     connectionsTable.grantFullAccess(defaultFn);

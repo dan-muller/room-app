@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda";
 import { ApiGatewayManagementApi, DynamoDB } from "aws-sdk";
 
-const TableName = "Connections";
+const TableName = process.env.CONNECTIONS_TABLE_NAME || "Connections";
 const Client = {
   connect: async (ConnectionId: string) =>
     new DynamoDB.DocumentClient()
@@ -24,6 +24,7 @@ const Client = {
 
 export const connectHandler: Handler = async (event) => {
   try {
+    console.log("connections Table Name", TableName);
     await Client.connect(event.requestContext.connectionId);
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
