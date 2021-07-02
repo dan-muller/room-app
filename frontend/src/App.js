@@ -36,6 +36,14 @@ const App = () => {
     ws.onerror = (event) => {
       console.debug("onerror", event);
     };
+
+    function closeWs() {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    }
+    window.addEventListener("unload", closeWs);
+    window.onbeforeunload = closeWs;
   } else {
     setBody([...body, "Uh oh! You need a Name and a RoomCode!"]);
   }
