@@ -31,7 +31,7 @@ const Client = {
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
   },
 
-  findRoomCode: async (ConnectionId: string) => {
+  getRoomCode: async (ConnectionId: string) => {
     const IndexName = "ConnectionIdIndex";
     const KeyConditionExpression = "ConnectionId = :ConnectionId";
     const ExpressionAttributeValues = { ":ConnectionId": ConnectionId };
@@ -65,15 +65,17 @@ const Client = {
       .promise()
       .then((value) => {
         const { Items } = value;
-        const Connections = Items?.reduce(
-          (connections, item) => ({
-            ...connections,
-            [item.ConnectionId]: {
-              Name: item.Name,
-              Connected: item.EventType === "Connect",
-            },
-          }),
-          {}
+        const Connections = Object.values(
+          Items?.reduce(
+            (connections, item) => ({
+              ...connections,
+              [item.ConnectionId]: {
+                Name: item.Name,
+                Connected: item.EventType === "Connect",
+              },
+            }),
+            {}
+          ) as Record<string, { Name: string; Connected: boolean }>
         );
         console.log({
           TableName,
@@ -124,7 +126,7 @@ export const defaultHandler: Handler = async (event) => {
   console.log("Default Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
-    const RoomCode = await Client.findRoomCode(ConnectionId);
+    const RoomCode = await Client.getRoomCode(ConnectionId);
     const Connections = await Client.listConnections(RoomCode);
 
     return { statusCode: 200, body: `Echo: "${event.body}"` };
