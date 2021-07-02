@@ -32,6 +32,38 @@ export class RoomAppStack extends cdk.Stack {
 
     const connectionsTable = new Connections.Table(this);
 
+    const frontendBucket = new s3.Bucket(this, "FrontendBucket");
+
+    let hostedZone, wwwDomainName, certificate, domainNames;
+    if (domainName && zoneId) {
+      hostedZone = route53.HostedZone.fromHostedZoneAttributes(
+        this,
+        "HostedZone",
+        { hostedZoneId: zoneId, zoneName: domainName + "." }
+      );
+      wwwDomainName = "www." + domainName;
+      certificate = new acm.Certificate(this, "Certificate", {
+        domainName,
+        subjectAlternativeNames: [wwwDomainName],
+        validation: acm.CertificateValidation.fromDns(hostedZone),
+      });
+      domainNames = [domainName, wwwDomainName];
+    }
+
+    const distro = new cloudfront.Distribution(this, "Distro", {
+      logBucket: new s3.Bucket(this, "DistroLoggingBucket"),
+      logFilePrefix: "distribution-access-logs/",
+      logIncludesCookies: true,
+      defaultBehavior: {
+        origin: new origins.S3Origin(frontendBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+      },
+      defaultRootObject: "index.html",
+      domainNames,
+      certificate,
+    });
+
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: "connections.connectHandler",
@@ -61,7 +93,7 @@ export class RoomAppStack extends cdk.Stack {
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
-        ENDPOINT: "https://d1vy5lwn12jrv5.cloudfront.net/ws/",
+        ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
         CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
@@ -85,45 +117,11 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    const ws = new apigwv2.WebSocketStage(this, "ProdStage", {
+    new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
       autoDeploy: true,
     });
-
-    const frontendBucket = new s3.Bucket(this, "FrontendBucket");
-
-    let hostedZone, wwwDomainName, certificate, domainNames;
-    if (domainName && zoneId) {
-      hostedZone = route53.HostedZone.fromHostedZoneAttributes(
-        this,
-        "HostedZone",
-        { hostedZoneId: zoneId, zoneName: domainName + "." }
-      );
-      wwwDomainName = "www." + domainName;
-      certificate = new acm.Certificate(this, "Certificate", {
-        domainName,
-        subjectAlternativeNames: [wwwDomainName],
-        validation: acm.CertificateValidation.fromDns(hostedZone),
-      });
-      domainNames = [domainName, wwwDomainName];
-    }
-
-    const distroProps: any = {
-      logBucket: new s3.Bucket(this, "DistroLoggingBucket"),
-      logFilePrefix: "distribution-access-logs/",
-      logIncludesCookies: true,
-      defaultBehavior: {
-        origin: new origins.S3Origin(frontendBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-      },
-      defaultRootObject: "index.html",
-      domainNames,
-      certificate,
-    };
-
-    const distro = new cloudfront.Distribution(this, "Distro", distroProps);
 
     distro.addBehavior(
       `/${stageName}/*`,
