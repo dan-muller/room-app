@@ -30,6 +30,32 @@ const Client = {
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
   },
+
+  findRoomCode: async (ConnectionId: string) => {
+    const IndexName = "ConnectionIdIndex";
+    const KeyConditionExpression = "ConnectionId = :ConnectionId";
+    const ExpressionAttributeValues = { ":ConnectionId": ConnectionId };
+    return new DynamoDB.DocumentClient()
+      .query({
+        TableName,
+        IndexName,
+        KeyConditionExpression,
+        ExpressionAttributeValues,
+      })
+      .promise()
+      .then((value) => {
+        const { Items } = value;
+        console.log({
+          TableName,
+          IndexName,
+          KeyConditionExpression,
+          ExpressionAttributeValues,
+          Items,
+          RoomCode: Items?.[0]?.PK,
+        });
+        return Items?.[0]?.PK;
+      });
+  },
 };
 
 export const connectHandler: Handler = async (event) => {
@@ -68,6 +94,9 @@ export const disconnectHandler: Handler = async (event) => {
 export const defaultHandler: Handler = async (event) => {
   console.log("Default Event:", event);
   try {
+    const ConnectionId = event.requestContext.connectionId;
+    const RoomCode = await Client.findRoomCode(ConnectionId);
+
     return { statusCode: 200, body: `Echo: "${event.body}"` };
   } catch (e) {
     return { statusCode: 500, body: JSON.stringify(e) };
