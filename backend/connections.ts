@@ -56,6 +56,35 @@ const Client = {
         return Items?.[0]?.PK;
       });
   },
+
+  listConnections: async (RoomCode: string) => {
+    const KeyConditionExpression = "PK = :RoomCode";
+    const ExpressionAttributeValues = { ":RoomCode": RoomCode };
+    return new DynamoDB.DocumentClient()
+      .query({ TableName, KeyConditionExpression, ExpressionAttributeValues })
+      .promise()
+      .then((value) => {
+        const { Items } = value;
+        const Connections = Items?.reduce(
+          (connections, item) => ({
+            ...connections,
+            [item.ConnectionId]: {
+              Name: item.Name,
+              Connected: item.EventType === "Connect",
+            },
+          }),
+          {}
+        );
+        console.log({
+          TableName,
+          KeyConditionExpression,
+          ExpressionAttributeValues,
+          Items,
+          Connections,
+        });
+        return Connections;
+      });
+  },
 };
 
 export const connectHandler: Handler = async (event) => {
@@ -96,6 +125,7 @@ export const defaultHandler: Handler = async (event) => {
   try {
     const ConnectionId = event.requestContext.connectionId;
     const RoomCode = await Client.findRoomCode(ConnectionId);
+    const Connections = await Client.listConnections(RoomCode);
 
     return { statusCode: 200, body: `Echo: "${event.body}"` };
   } catch (e) {
