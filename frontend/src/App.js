@@ -36,6 +36,8 @@ const App = () => {
     ws.onerror = (event) => {
       console.debug("onerror", event);
     };
+  } else {
+    setBody([...body, "Uh oh! You need a Name and a RoomCode!"]);
   }
 
   return (
