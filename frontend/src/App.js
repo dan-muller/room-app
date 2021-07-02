@@ -12,29 +12,31 @@ const App = () => {
       .map((param) => param.split("="))
   );
 
-  const { RoomCode } = params;
+  const { RoomCode, Name } = params;
 
-  const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}`;
-  console.debug("WS URL:", url);
-  const ws = new WebSocket(url);
+  if (RoomCode && Name) {
+    const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
+    console.debug("WS URL:", url);
+    const ws = new WebSocket(url);
 
-  ws.onmessage = (event) => {
-    console.debug("onmessage", event);
-    setBody([...body, event]);
-  };
+    ws.onmessage = (event) => {
+      console.debug("onmessage", event);
+      setBody([...body, event]);
+    };
 
-  ws.onopen = (event) => {
-    console.debug("onopen", event);
-    ws.send("Hello WS, I have connected.");
-  };
+    ws.onopen = (event) => {
+      console.debug("onopen", event);
+      ws.send("Hello WS, I have connected.");
+    };
 
-  ws.onclose = (event) => {
-    console.debug("onclose", event);
-  };
+    ws.onclose = (event) => {
+      console.debug("onclose", event);
+    };
 
-  ws.onerror = (event) => {
-    console.debug("onerror", event);
-  };
+    ws.onerror = (event) => {
+      console.debug("onerror", event);
+    };
+  }
 
   return (
     <div className="App">

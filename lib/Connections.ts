@@ -14,11 +14,14 @@ namespace Connections {
     removalPolicy: aws.RemovalPolicy.DESTROY,
   };
 
-  // SK: Connection:<ConnectionId>|EventType:<Connect | Disconnect>
-
   export class Table extends dynamodb.Table {
     constructor(parent: aws.Construct) {
       super(parent, TableName, TableProps);
+      this.addGlobalSecondaryIndex({
+        partitionKey: { name: "ConnectionId", type: cdk.AttributeType.STRING },
+        indexName: "ConnectionIdIndex",
+        projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+      });
     }
   }
 }
