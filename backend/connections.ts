@@ -1,34 +1,59 @@
 import { Handler } from "aws-lambda";
 import { ApiGatewayManagementApi, DynamoDB } from "aws-sdk";
 
-const TableName = process.env.CONNECTIONS_TABLE_NAME || "Connections";
+const TableName = process.env.CONNECTIONS_TABLE_NAME;
+if (!TableName) {
+  throw new Error(
+    "The environment variable CONNECTIONS_TABLE_NAME must be set."
+  );
+}
+
+const RoomCode = "AAA";
+
 const Client = {
-  connect: async (ConnectionId: string) =>
-    new DynamoDB.DocumentClient()
-      .put({ TableName, Item: { ConnectionId, Active: "Yes" } })
-      .promise(),
+  connect: async (RoomCode: string, ConnectionId: string) => {
+    const Item = {
+      PK: RoomCode,
+      SK: `ConnectionId:${ConnectionId}|EventType:Connect`,
+    };
+    console.log({ TableName, Item });
+    return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+  },
 
-  disconnect: async (ConnectionId: string) =>
-    new DynamoDB.DocumentClient()
-      .put({ TableName, Item: { ConnectionId, Active: "No" } })
-      .promise(),
+  disconnect: async (RoomCode: string, ConnectionId: string) => {
+    const Item = {
+      PK: RoomCode,
+      SK: `ConnectionId:${ConnectionId}|EventType:Disconnect`,
+    };
+    console.log({ TableName, Item });
+    return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+  },
 
-  listConnected: async () =>
-    new DynamoDB.DocumentClient()
-      .query({
-        TableName,
-        KeyConditionExpression: "Active = :a",
-        ExpressionAttributeValues: {
-          ":a": "Yes",
-        },
-      })
-      .promise(),
+  listConnected: async (RoomCode: string) => {
+    const KeyConditionExpression = "PK = :RoomCode";
+    const ExpressionAttributeValues = { ":RoomCode": RoomCode };
+    return new DynamoDB.DocumentClient()
+      .query({ TableName, KeyConditionExpression, ExpressionAttributeValues })
+      .promise()
+      .then((value) => {
+        const { Items } = value;
+        console.log({
+          TableName,
+          KeyConditionExpression,
+          ExpressionAttributeValues,
+          Items,
+        });
+        return value;
+      });
+  },
 };
 
 export const connectHandler: Handler = async (event) => {
+  console.log("Event: ", event);
   try {
+    event.requestContext;
     console.log("connections Table Name", TableName);
-    await Client.connect(event.requestContext.connectionId);
+    await Client.connect(RoomCode, event.requestContext.connectionId);
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
     console.error("error!", e);
@@ -40,8 +65,9 @@ export const connectHandler: Handler = async (event) => {
 };
 
 export const disconnectHandler: Handler = async (event) => {
+  console.log("Event: ", event);
   try {
-    await Client.disconnect(event.requestContext.connectionId);
+    await Client.disconnect(RoomCode, event.requestContext.connectionId);
     return { statusCode: 200, body: "Disconnected." };
   } catch (e) {
     console.error("error!", e);
@@ -60,7 +86,7 @@ export const defaultHandler: Handler = async (event) => {
 
     console.log("Api endpoint: ", process.env.ENDPOINT);
 
-    const connections = await Client.listConnected();
+    const connections = await Client.listConnected(RoomCode);
 
     console.log("Scanning connections: ", connections);
 
