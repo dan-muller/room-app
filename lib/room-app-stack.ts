@@ -1,12 +1,14 @@
-import * as cdk from "@aws-cdk/core";
-import * as lambda from "@aws-cdk/aws-lambda";
+import * as acm from "@aws-cdk/aws-certificatemanager";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as s3 from "@aws-cdk/aws-s3";
+import * as cdk from "@aws-cdk/core";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as acm from "@aws-cdk/aws-certificatemanager";
+import * as lambda from "@aws-cdk/aws-lambda";
 import * as origins from "@aws-cdk/aws-cloudfront-origins";
+import * as route53 from "@aws-cdk/aws-route53";
+import * as s3 from "@aws-cdk/aws-s3";
+
+import Connections from "./Connections";
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
@@ -24,47 +26,75 @@ export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
     super(scope, id, props);
 
-    const {
-      fromAddress,
-      domainName,
-      zoneId,
-      facebookAppId,
-      facebookAppSecret,
-      amazonClientId,
-      amazonClientSecret,
-      googleClientId,
-      googleClientSecret,
-    } = props;
+    const { domainName, zoneId } = props;
 
     const stageName = "ws";
 
+    const connectionsTable = new Connections.Table(this);
+
+    const frontendBucket = new s3.Bucket(this, "FrontendBucket");
+
+    let hostedZone, wwwDomainName, certificate, domainNames;
+    if (domainName && zoneId) {
+      hostedZone = route53.HostedZone.fromHostedZoneAttributes(
+        this,
+        "HostedZone",
+        { hostedZoneId: zoneId, zoneName: domainName + "." }
+      );
+      wwwDomainName = "www." + domainName;
+      certificate = new acm.Certificate(this, "Certificate", {
+        domainName,
+        subjectAlternativeNames: [wwwDomainName],
+        validation: acm.CertificateValidation.fromDns(hostedZone),
+      });
+      domainNames = [domainName, wwwDomainName];
+    }
+
+    const distro = new cloudfront.Distribution(this, "Distro", {
+      logBucket: new s3.Bucket(this, "DistroLoggingBucket"),
+      logFilePrefix: "distribution-access-logs/",
+      logIncludesCookies: true,
+      defaultBehavior: {
+        origin: new origins.S3Origin(frontendBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+      },
+      defaultRootObject: "index.html",
+      domainNames,
+      certificate,
+    });
+
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.connect",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "connections.connectHandler",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.disconnect",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "connections.disconnectHandler",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.default",
-      code: lambda.Code.fromAsset("backend/connect"),
+      handler: "connections.defaultHandler",
+      code: lambda.Code.fromAsset("backend"),
       memorySize: 3000,
       environment: {
         NODE_ENV: "production",
+        ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
+        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       },
       timeout: cdk.Duration.seconds(20),
     });
@@ -93,40 +123,6 @@ export class RoomAppStack extends cdk.Stack {
       autoDeploy: true,
     });
 
-    const frontendBucket = new s3.Bucket(this, "FrontendBucket");
-
-    let hostedZone, wwwDomainName, certificate, domainNames;
-    if (domainName && zoneId) {
-      hostedZone = route53.HostedZone.fromHostedZoneAttributes(
-        this,
-        "HostedZone",
-        { hostedZoneId: zoneId, zoneName: domainName + "." }
-      );
-      wwwDomainName = "www." + domainName;
-      certificate = new acm.Certificate(this, "Certificate", {
-        domainName,
-        subjectAlternativeNames: [wwwDomainName],
-        validation: acm.CertificateValidation.fromDns(hostedZone),
-      });
-      domainNames = [domainName, wwwDomainName];
-    }
-
-    const distroProps: any = {
-      logBucket: new s3.Bucket(this, "DistroLoggingBucket"),
-      logFilePrefix: "distribution-access-logs/",
-      logIncludesCookies: true,
-      defaultBehavior: {
-        origin: new origins.S3Origin(frontendBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-      },
-      defaultRootObject: "index.html",
-      domainNames,
-      certificate,
-    };
-
-    const distro = new cloudfront.Distribution(this, "Distro", distroProps);
-
     distro.addBehavior(
       `/${stageName}/*`,
       new origins.HttpOrigin(
@@ -148,10 +144,16 @@ export class RoomAppStack extends cdk.Stack {
               "Sec-WebSocket-Key",
               "Sec-WebSocket-Version"
             ),
+            queryStringBehavior:
+              cloudfront.OriginRequestQueryStringBehavior.all(),
           }
         ),
       }
     );
+
+    connectionsTable.grantFullAccess(connectFn);
+    connectionsTable.grantFullAccess(disconnectFn);
+    connectionsTable.grantFullAccess(defaultFn);
 
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,

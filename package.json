@@ -9,6 +9,7 @@
     "@aws-cdk/aws-certificatemanager": "^1.108.1",
     "@aws-cdk/aws-cloudfront": "^1.108.1",
     "@aws-cdk/aws-cloudfront-origins": "^1.108.1",
+    "@aws-cdk/aws-dynamodb": "^1.108.1",
     "@aws-cdk/aws-lambda": "^1.108.1",
     "@aws-cdk/aws-route53": "^1.108.1",
     "@aws-cdk/aws-s3": "^1.108.1",
