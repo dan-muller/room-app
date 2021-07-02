@@ -144,6 +144,8 @@ export class RoomAppStack extends cdk.Stack {
               "Sec-WebSocket-Key",
               "Sec-WebSocket-Version"
             ),
+            queryStringBehavior:
+              cloudfront.OriginRequestQueryStringBehavior.all(),
           }
         ),
       }
