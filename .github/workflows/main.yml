@@ -32,8 +32,8 @@ jobs:
         run: |
           npm install
 
-      - name: Install backend/connect
-        working-directory: backend/connect
+      - name: Install backend
+        working-directory: backend
         run: |
           npm install
 
@@ -43,6 +43,11 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        run: |
+          npm run build
+
+      - name: Build backend
+        working-directory: backend
         run: |
           npm run build
 
