@@ -8,8 +8,6 @@ if (!TableName) {
   );
 }
 
-const RoomCode = "AAA";
-
 const Client = {
   connect: async (RoomCode: string, ConnectionId: string) => {
     const Item = {
@@ -51,7 +49,7 @@ const Client = {
 export const connectHandler: Handler = async (event) => {
   console.log("Event: ", event);
   try {
-    event.requestContext;
+    const RoomCode = event.queryStringParameters.RoomCode;
     console.log("connections Table Name", TableName);
     await Client.connect(RoomCode, event.requestContext.connectionId);
     return { statusCode: 200, body: "Connected." };
@@ -67,6 +65,7 @@ export const connectHandler: Handler = async (event) => {
 export const disconnectHandler: Handler = async (event) => {
   console.log("Event: ", event);
   try {
+    const RoomCode = event.queryStringParameters.RoomCode;
     await Client.disconnect(RoomCode, event.requestContext.connectionId);
     return { statusCode: 200, body: "Disconnected." };
   } catch (e) {
@@ -81,6 +80,7 @@ export const disconnectHandler: Handler = async (event) => {
 export const defaultHandler: Handler = async (event) => {
   try {
     // const api = new ApiGatewayManagementApi({ endpoint: process.env.ENDPOINT });
+    const RoomCode = event.queryStringParameters.RoomCode;
 
     console.log("Event: ", event);
 
@@ -101,8 +101,6 @@ export const defaultHandler: Handler = async (event) => {
     // if (postCalls) {
     //   await Promise.all(postCalls);
     // }
-
-    console.log("Done");
 
     return { statusCode: 200, body: "Event sent." };
   } catch (e) {
