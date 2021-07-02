@@ -20,7 +20,6 @@ const Client = {
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
   },
-
   disconnect: async (RoomCode: string, ConnectionId: string) => {
     const Item = {
       PK: RoomCode,
@@ -31,49 +30,6 @@ const Client = {
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
   },
-
-  listConnected: async (RoomCode: string) => {
-    const KeyConditionExpression = "PK = :RoomCode";
-    const ExpressionAttributeValues = { ":RoomCode": RoomCode };
-    return new DynamoDB.DocumentClient()
-      .query({ TableName, KeyConditionExpression, ExpressionAttributeValues })
-      .promise()
-      .then((value) => {
-        const { Items } = value;
-        console.log({
-          TableName,
-          KeyConditionExpression,
-          ExpressionAttributeValues,
-          Items,
-        });
-        return value;
-      });
-  },
-
-  listRooms: async (ConnectionId: string) => {
-    const IndexName = "ConnectionIdIndex";
-    const KeyConditionExpression = "ConnectionId = :ConnectionId";
-    const ExpressionAttributeValues = { ":ConnectionId": ConnectionId };
-    return new DynamoDB.DocumentClient()
-      .query({
-        TableName,
-        IndexName,
-        KeyConditionExpression,
-        ExpressionAttributeValues,
-      })
-      .promise()
-      .then((value) => {
-        const { Items } = value;
-        console.log({
-          TableName,
-          IndexName,
-          KeyConditionExpression,
-          ExpressionAttributeValues,
-          Items,
-        });
-        return value;
-      });
-  },
 };
 
 export const connectHandler: Handler = async (event) => {
@@ -82,7 +38,6 @@ export const connectHandler: Handler = async (event) => {
     const ConnectionId = event.requestContext.connectionId;
     const RoomCode = event.queryStringParameters.RoomCode;
     const Name = event.queryStringParameters.Name;
-    console.log("connections Table Name", TableName);
     await Client.connect(RoomCode, ConnectionId, Name);
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
@@ -113,23 +68,7 @@ export const disconnectHandler: Handler = async (event) => {
 export const defaultHandler: Handler = async (event) => {
   console.log("Default Event:", event);
   try {
-    const ConnectionId = event.requestContext.connectionId;
-    await Client.listRooms(ConnectionId);
-
-    // const api = new ApiGatewayManagementApi({ endpoint: process.env.ENDPOINT });
-    // const postCalls = connections?.Items?.map(async ({ Id }: any) => {
-    //   await api
-    //     .postToConnection({ ConnectionId: Id, Data: JSON.stringify(event) })
-    //     .promise();
-    // });
-    //
-    // console.log("Posting events to connections:", postCalls);
-    //
-    // if (postCalls) {
-    //   await Promise.all(postCalls);
-    // }
-
-    return { statusCode: 200, body: "Event sent." };
+    return { statusCode: 200, body: `Echo: "${event.body}"` };
   } catch (e) {
     return { statusCode: 500, body: JSON.stringify(e) };
   }
