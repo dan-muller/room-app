@@ -1,15 +1,19 @@
 import { Handler } from "aws-lambda";
 import { ApiGatewayManagementApi, DynamoDB } from "aws-sdk";
 
-const TableName = process.env.CONNECTIONS_TABLE_NAME;
-if (!TableName) {
-  throw new Error(
-    "The environment variable CONNECTIONS_TABLE_NAME must be set."
-  );
-}
+namespace Client {
+  const TableName = process.env.CONNECTIONS_TABLE_NAME;
+  if (!TableName) {
+    throw new Error(
+      "The environment variable CONNECTIONS_TABLE_NAME must be set."
+    );
+  }
 
-const Client = {
-  connect: async (RoomCode: string, ConnectionId: string, Name: string) => {
+  export const connect = async (
+    RoomCode: string,
+    ConnectionId: string,
+    Name: string
+  ) => {
     const Item = {
       PK: RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:Connect`,
@@ -19,8 +23,9 @@ const Client = {
     };
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
-  },
-  disconnect: async (RoomCode: string, ConnectionId: string) => {
+  };
+
+  export const disconnect = async (RoomCode: string, ConnectionId: string) => {
     const Item = {
       PK: RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:Disconnect`,
@@ -29,9 +34,11 @@ const Client = {
     };
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
-  },
+  };
 
-  getRoomCode: async (ConnectionId: string) => {
+  export const getRoomCode = async (
+    ConnectionId: string
+  ): Promise<string | undefined> => {
     const IndexName = "ConnectionIdIndex";
     const KeyConditionExpression = "ConnectionId = :ConnectionId";
     const ExpressionAttributeValues = { ":ConnectionId": ConnectionId };
@@ -53,11 +60,19 @@ const Client = {
           Items,
           RoomCode: Items?.[0]?.PK,
         });
-        return Items?.[0]?.PK;
+        return Items?.[0]?.PK || undefined;
       });
-  },
+  };
 
-  listConnections: async (RoomCode: string) => {
+  type Connection = {
+    Connected: boolean;
+    ConnectionId: string;
+    Name: string;
+  };
+
+  export const listConnections = async (
+    RoomCode: string
+  ): Promise<Connection[]> => {
     const KeyConditionExpression = "PK = :RoomCode";
     const ExpressionAttributeValues = { ":RoomCode": RoomCode };
     return new DynamoDB.DocumentClient()
@@ -70,12 +85,13 @@ const Client = {
             (connections, item) => ({
               ...connections,
               [item.ConnectionId]: {
-                Name: item.Name,
                 Connected: item.EventType === "Connect",
+                ConnectionId: item.ConnectionId,
+                Name: item.Name,
               },
             }),
             {}
-          ) as Record<string, { Name: string; Connected: boolean }>
+          ) as Record<string, Connection>
         );
         console.log({
           TableName,
@@ -86,8 +102,8 @@ const Client = {
         });
         return Connections;
       });
-  },
-};
+  };
+}
 
 export const connectHandler: Handler = async (event) => {
   console.log("Connect Event:", event);
@@ -110,9 +126,15 @@ export const disconnectHandler: Handler = async (event) => {
   console.log("Disconnect Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
-    const RoomCode = event.queryStringParameters.RoomCode;
-    await Client.disconnect(RoomCode, ConnectionId);
-    return { statusCode: 200, body: "Disconnected." };
+    const RoomCode = await Client.getRoomCode(ConnectionId);
+    if (RoomCode) {
+      await Client.disconnect(RoomCode, ConnectionId);
+      return { statusCode: 200, body: "Disconnected." };
+    }
+    return {
+      statusCode: 501,
+      body: "Failed to disconnect: RoomCode for ConnectionId not found.",
+    };
   } catch (e) {
     console.error("error!", e);
     return {
@@ -126,8 +148,24 @@ export const defaultHandler: Handler = async (event) => {
   console.log("Default Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
+
     const RoomCode = await Client.getRoomCode(ConnectionId);
-    const Connections = await Client.listConnections(RoomCode);
+    if (RoomCode) {
+      const Connections = await Client.listConnections(RoomCode);
+
+      const Api = new ApiGatewayManagementApi({
+        endpoint: process.env.ENDPOINT,
+      });
+
+      const PostCalls = Connections.map(async ({ ConnectionId }) => {
+        await Api.postToConnection({
+          ConnectionId,
+          Data: JSON.stringify(event),
+        }).promise();
+      });
+
+      console.log({ Api, PostCalls });
+    }
 
     return { statusCode: 200, body: `Echo: "${event.body}"` };
   } catch (e) {

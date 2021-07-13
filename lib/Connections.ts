@@ -19,6 +19,7 @@ namespace Connections {
       super(parent, TableName, TableProps);
       this.addGlobalSecondaryIndex({
         partitionKey: { name: "ConnectionId", type: cdk.AttributeType.STRING },
+        sortKey: { name: "Timestamp", type: cdk.AttributeType.STRING },
         indexName: "ConnectionIdIndex",
         projectionType: dynamodb.ProjectionType.KEYS_ONLY,
       });
