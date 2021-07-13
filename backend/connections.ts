@@ -23,7 +23,10 @@ namespace Client {
       Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
-    return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+    return [
+      await new DynamoDB.DocumentClient().put({ TableName, Item }).promise(),
+      Item,
+    ];
   };
 
   export const disconnect = async (RoomCode: string, ConnectionId: string) => {
@@ -35,12 +38,20 @@ namespace Client {
       Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
-    return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+    return [
+      await new DynamoDB.DocumentClient().put({ TableName, Item }).promise(),
+      Item,
+    ];
   };
 
-  export const getRoomCode = async (
+  type RoomInfo = {
+    RoomCode: string;
+    Name: string;
+  };
+
+  export const getRoomInfo = async (
     ConnectionId: string
-  ): Promise<string | undefined> => {
+  ): Promise<RoomInfo> => {
     const IndexName = "ConnectionIdIndex";
     const KeyConditionExpression = "ConnectionId = :ConnectionId";
     const ExpressionAttributeValues = { ":ConnectionId": ConnectionId };
@@ -62,7 +73,7 @@ namespace Client {
           Items,
           RoomCode: Items?.[0]?.PK,
         });
-        return Items?.[0]?.PK || undefined;
+        return { RoomCode: Items?.[0]?.PK, Name: Items?.[0]?.Name };
       });
   };
 
@@ -113,7 +124,24 @@ export const connectHandler: Handler = async (event) => {
     const ConnectionId = event.requestContext.connectionId;
     const RoomCode = event.queryStringParameters.RoomCode;
     const Name = event.queryStringParameters.Name;
-    await Client.connect(RoomCode, ConnectionId, Name);
+
+    const [, Event] = await Client.connect(RoomCode, ConnectionId, Name);
+
+    const Connections = await Client.listConnections(RoomCode);
+    const Api = new ApiGatewayManagementApi({
+      endpoint: process.env.ENDPOINT,
+    });
+    const PostCalls = Connections.filter(
+      (Connection) => Connection.Connected
+    ).map(async (Connection) => {
+      await Api.postToConnection({
+        ConnectionId: Connection.ConnectionId,
+        Data: JSON.stringify(Event),
+      }).promise();
+    });
+
+    console.log({ Api, Event, PostCalls: await Promise.all(PostCalls) });
+
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
     console.error("error!", e);
@@ -128,9 +156,25 @@ export const disconnectHandler: Handler = async (event) => {
   console.log("Disconnect Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
-    const RoomCode = await Client.getRoomCode(ConnectionId);
+    const { RoomCode } = await Client.getRoomInfo(ConnectionId);
     if (RoomCode) {
-      await Client.disconnect(RoomCode, ConnectionId);
+      const [, Event] = await Client.disconnect(RoomCode, ConnectionId);
+
+      const Connections = await Client.listConnections(RoomCode);
+      const Api = new ApiGatewayManagementApi({
+        endpoint: process.env.ENDPOINT,
+      });
+      const PostCalls = Connections.filter(
+        (Connection) => Connection.Connected
+      ).map(async (Connection) => {
+        await Api.postToConnection({
+          ConnectionId: Connection.ConnectionId,
+          Data: JSON.stringify(Event),
+        }).promise();
+      });
+
+      console.log({ Api, Event, PostCalls: await Promise.all(PostCalls) });
+
       return { statusCode: 200, body: "Disconnected." };
     }
     return {
@@ -151,22 +195,23 @@ export const defaultHandler: Handler = async (event) => {
   try {
     const ConnectionId = event.requestContext.connectionId;
 
-    const RoomCode = await Client.getRoomCode(ConnectionId);
+    const { RoomCode } = await Client.getRoomInfo(ConnectionId);
     if (RoomCode) {
       const Connections = await Client.listConnections(RoomCode);
 
       const Api = new ApiGatewayManagementApi({
         endpoint: process.env.ENDPOINT,
       });
-
-      const PostCalls = Connections.map(async (Connection) => {
+      const PostCalls = Connections.filter(
+        (Connection) => Connection.Connected
+      ).map(async (Connection) => {
         await Api.postToConnection({
           ConnectionId: Connection.ConnectionId,
-          Data: JSON.stringify(Connection),
+          Data: JSON.stringify(Connections),
         }).promise();
       });
 
-      console.log({ Api, PostCalls });
+      console.log({ Api, PostCalls: await Promise.all(PostCalls) });
     }
 
     return { statusCode: 200, body: `Echo: "${event.body}"` };
