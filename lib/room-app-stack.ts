@@ -64,38 +64,34 @@ export class RoomAppStack extends cdk.Stack {
       certificate,
     });
 
+    const environment = {
+      CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
+      ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
+      NODE_ENV: "production",
+    };
+
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "connections.connectHandler",
       code: lambda.Code.fromAsset("backend"),
+      environment,
+      handler: "connections.connectHandler",
       memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
+      runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
     });
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "connections.disconnectHandler",
       code: lambda.Code.fromAsset("backend"),
+      environment,
+      handler: "connections.disconnectHandler",
       memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
+      runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "connections.defaultHandler",
       code: lambda.Code.fromAsset("backend"),
+      environment,
+      handler: "connections.defaultHandler",
       memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
+      runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
     });
 

@@ -1,7 +1,7 @@
 import { Handler } from "aws-lambda";
 import { ApiGatewayManagementApi, DynamoDB } from "aws-sdk";
 
-namespace Client {
+namespace DynamoClient {
   const TableName = process.env.CONNECTIONS_TABLE_NAME;
   if (!TableName) {
     throw new Error(
@@ -23,10 +23,8 @@ namespace Client {
       Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
-    return [
-      await new DynamoDB.DocumentClient().put({ TableName, Item }).promise(),
-      Item,
-    ];
+    await new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+    return { ...Item, RoomCode: Item.PK };
   };
 
   export const disconnect = async (RoomCode: string, ConnectionId: string) => {
@@ -38,10 +36,8 @@ namespace Client {
       Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
-    return [
-      await new DynamoDB.DocumentClient().put({ TableName, Item }).promise(),
-      Item,
-    ];
+    await new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
+    return { ...Item, RoomCode: Item.PK };
   };
 
   type RoomInfo = {
@@ -118,6 +114,46 @@ namespace Client {
   };
 }
 
+namespace ApiClient {
+  const Endpoint = process.env.ENDPOINT;
+  if (!Endpoint) {
+    throw new Error("The environment variable ENDPOINT must be set.");
+  }
+
+  export const publishEvent = async (
+    ConnectionId: string,
+    RoomCode: string,
+    Event: any
+  ) => {
+    const Connections = await DynamoClient.listConnections(RoomCode);
+    const Api = new ApiGatewayManagementApi({
+      endpoint: process.env.ENDPOINT,
+    });
+
+    const PostToUser = await Api.postToConnection({
+      ConnectionId: ConnectionId,
+      Data: JSON.stringify({ Connections }),
+    }).promise();
+
+    const PostToConnections = Connections.filter(
+      (Connection) => Connection.Connected
+    ).map(async (Connection) =>
+      Api.postToConnection({
+        ConnectionId: Connection.ConnectionId,
+        Data: JSON.stringify({ Event }),
+      }).promise()
+    );
+
+    console.log({
+      Api,
+      PostToUser: await PostToUser,
+      PostToConnections: await Promise.all(PostToConnections),
+    });
+
+    return [PostToUser, ...PostToConnections];
+  };
+}
+
 export const connectHandler: Handler = async (event) => {
   console.log("Connect Event:", event);
   try {
@@ -125,22 +161,8 @@ export const connectHandler: Handler = async (event) => {
     const RoomCode = event.queryStringParameters.RoomCode;
     const Name = event.queryStringParameters.Name;
 
-    const [, Event] = await Client.connect(RoomCode, ConnectionId, Name);
-
-    const Connections = await Client.listConnections(RoomCode);
-    const Api = new ApiGatewayManagementApi({
-      endpoint: process.env.ENDPOINT,
-    });
-    const PostCalls = Connections.filter(
-      (Connection) => Connection.Connected
-    ).map(async (Connection) => {
-      await Api.postToConnection({
-        ConnectionId: Connection.ConnectionId,
-        Data: JSON.stringify(Event),
-      }).promise();
-    });
-
-    console.log({ Api, Event, PostCalls: await Promise.all(PostCalls) });
+    const Event = await DynamoClient.connect(RoomCode, ConnectionId, Name);
+    await ApiClient.publishEvent(ConnectionId, RoomCode, Event);
 
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
@@ -156,24 +178,10 @@ export const disconnectHandler: Handler = async (event) => {
   console.log("Disconnect Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
-    const { RoomCode } = await Client.getRoomInfo(ConnectionId);
+    const { RoomCode } = await DynamoClient.getRoomInfo(ConnectionId);
     if (RoomCode) {
-      const [, Event] = await Client.disconnect(RoomCode, ConnectionId);
-
-      const Connections = await Client.listConnections(RoomCode);
-      const Api = new ApiGatewayManagementApi({
-        endpoint: process.env.ENDPOINT,
-      });
-      const PostCalls = Connections.filter(
-        (Connection) => Connection.Connected
-      ).map(async (Connection) => {
-        await Api.postToConnection({
-          ConnectionId: Connection.ConnectionId,
-          Data: JSON.stringify(Event),
-        }).promise();
-      });
-
-      console.log({ Api, Event, PostCalls: await Promise.all(PostCalls) });
+      const Event = await DynamoClient.disconnect(RoomCode, ConnectionId);
+      await ApiClient.publishEvent(ConnectionId, RoomCode, Event);
 
       return { statusCode: 200, body: "Disconnected." };
     }
@@ -195,23 +203,9 @@ export const defaultHandler: Handler = async (event) => {
   try {
     const ConnectionId = event.requestContext.connectionId;
 
-    const { RoomCode } = await Client.getRoomInfo(ConnectionId);
+    const { RoomCode } = await DynamoClient.getRoomInfo(ConnectionId);
     if (RoomCode) {
-      const Connections = await Client.listConnections(RoomCode);
-
-      const Api = new ApiGatewayManagementApi({
-        endpoint: process.env.ENDPOINT,
-      });
-      const PostCalls = Connections.filter(
-        (Connection) => Connection.Connected
-      ).map(async (Connection) => {
-        await Api.postToConnection({
-          ConnectionId: Connection.ConnectionId,
-          Data: JSON.stringify(Connections),
-        }).promise();
-      });
-
-      console.log({ Api, PostCalls: await Promise.all(PostCalls) });
+      await ApiClient.publishEvent(ConnectionId, RoomCode, event.body);
     }
 
     return { statusCode: 200, body: `Echo: "${event.body}"` };
