@@ -15,11 +15,12 @@ namespace Client {
     Name: string
   ) => {
     const Item = {
+      ConnectionId,
+      EventType: "Connect",
+      Name,
       PK: RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:Connect`,
-      ConnectionId,
-      Name,
-      EventType: "Connect",
+      Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
@@ -27,10 +28,11 @@ namespace Client {
 
   export const disconnect = async (RoomCode: string, ConnectionId: string) => {
     const Item = {
-      PK: RoomCode,
-      SK: `ConnectionId:${ConnectionId}|EventType:Disconnect`,
       ConnectionId,
       EventType: "Disconnect",
+      PK: RoomCode,
+      SK: `ConnectionId:${ConnectionId}|EventType:Disconnect`,
+      Timestamp: Date.now(),
     };
     console.log({ TableName, Item });
     return new DynamoDB.DocumentClient().put({ TableName, Item }).promise();
@@ -157,10 +159,10 @@ export const defaultHandler: Handler = async (event) => {
         endpoint: process.env.ENDPOINT,
       });
 
-      const PostCalls = Connections.map(async ({ ConnectionId }) => {
+      const PostCalls = Connections.map(async (Connection) => {
         await Api.postToConnection({
-          ConnectionId,
-          Data: JSON.stringify(event),
+          ConnectionId: Connection.ConnectionId,
+          Data: JSON.stringify(Connection),
         }).promise();
       });
 
