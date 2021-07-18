@@ -131,20 +131,32 @@ namespace ApiClient {
     });
 
     console.log("ApiClient publishEvent PostToUser");
-    const PostToUser = Api.postToConnection({
-      ConnectionId: ConnectionId,
-      Data: JSON.stringify({ Connections }),
-    }).promise();
+    const PostToUser = Api.postToConnection(
+      {
+        ConnectionId,
+        Data: Buffer.from(Connections),
+      },
+      (err, data) => {
+        console.log("ApiClient publishEvent postToConnection err:", err);
+        console.log("ApiClient publishEvent postToConnection data:", data);
+      }
+    ).promise();
 
     console.log("ApiClient publishEvent PostToConnections");
 
     const PostToConnections = Connections.filter(
       (Connection) => Connection.Connected
-    ).map(async (Connection) =>
-      Api.postToConnection({
-        ConnectionId: Connection.ConnectionId,
-        Data: JSON.stringify({ Event }),
-      }).promise()
+    ).map(async ({ ConnectionId }) =>
+      Api.postToConnection(
+        {
+          ConnectionId,
+          Data: Buffer.from(Event),
+        },
+        (err, data) => {
+          console.log("ApiClient publishEvent postToConnection err:", err);
+          console.log("ApiClient publishEvent postToConnection data:", data);
+        }
+      ).promise()
     );
 
     console.log({
