@@ -115,7 +115,8 @@ export class RoomAppStack extends cdk.Stack {
       autoDeploy: true,
     });
 
-    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${webSocketStage.stageName}/`;
+    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/`;
+    // const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${webSocketStage.stageName}/`;
     connectFn.addEnvironment("ENDPOINT", ENDPOINT);
     disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
     defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
