@@ -192,7 +192,7 @@ const publishToConnections = async (RoomCode: string, ConnectionId: string, Even
         filter: (Connection) => Connection.Connected && Connection.ConnectionId !== ConnectionId
     });
     await ApiClient.postToConnections(Connections, Event);
-    return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
+    return Connections
 };
 
 export const connectHandler: Handler = async (event) => {
@@ -203,10 +203,12 @@ export const connectHandler: Handler = async (event) => {
         const Name = event.queryStringParameters.Name;
 
         const Event = await DynamoClient.connect(RoomCode, ConnectionId, Name);
-        return publishToConnections(RoomCode, ConnectionId, Event)
+        const Connections = publishToConnections(RoomCode, ConnectionId, Event)
+
+        return {statusCode: 200, body: JSON.stringify({Connections})};
     } catch (e) {
         console.error("error!", e);
-        return { statusCode: 500,  body: "Failed to connect:" + JSON.stringify(e) };
+        return {statusCode: 500,  body: "Failed to connect:" + JSON.stringify(e)};
     }
 };
 
@@ -218,7 +220,9 @@ export const disconnectHandler: Handler = async (event) => {
 
         if (RoomCode) {
             const Event = await DynamoClient.disconnect(RoomCode, ConnectionId);
-            return publishToConnections(RoomCode, ConnectionId, Event)
+            const Connections = publishToConnections(RoomCode, ConnectionId, Event)
+
+            return {statusCode: 200, body: JSON.stringify({Connections})};
         }
         return {
             statusCode: 500,
@@ -238,9 +242,11 @@ export const defaultHandler: Handler = async (event) => {
         const {RoomCode} = await DynamoClient.getRoomInfo(ConnectionId);
 
         if (RoomCode) {
-            return await publishToConnections(RoomCode, ConnectionId, Event);
+            const Connections = publishToConnections(RoomCode, ConnectionId, Event)
+
+            return {statusCode: 200, body: JSON.stringify({Connections})};
         }
-        return { statusCode: 500, body: "RoomCode for ConnectionId not found." };
+        return {statusCode: 500, body: "RoomCode for ConnectionId not found."};
     } catch (e) {
         console.error("error!", e);
         return {statusCode: 500, body: JSON.stringify(e)};
