@@ -130,10 +130,13 @@ namespace ApiClient {
       endpoint: process.env.ENDPOINT,
     });
 
+    console.log("ApiClient publishEvent PostToUser");
     const PostToUser = Api.postToConnection({
       ConnectionId: ConnectionId,
       Data: JSON.stringify({ Connections }),
     }).promise();
+
+    console.log("ApiClient publishEvent PostToConnections");
 
     const PostToConnections = Connections.filter(
       (Connection) => Connection.Connected
