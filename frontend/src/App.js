@@ -17,33 +17,42 @@ const App = () => {
   if (RoomCode && Name) {
     const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
     console.debug("WS URL:", url);
-    const ws = new WebSocket(url);
+    try {
+      const ws = new WebSocket(url);
 
-    ws.onmessage = (event) => {
-      console.debug("onmessage", event);
-      setBody([...body, event]);
-    };
+      ws.onmessage = (event) => {
+        console.debug("onmessage", event);
+        setBody([...body, event]);
+      };
 
-    ws.onopen = (event) => {
-      console.debug("onopen", event);
-      ws.send("Hello WS, I have connected.");
-    };
+      ws.onopen = (event) => {
+        console.debug("onopen", event);
+        try {
+          ws.send("Hello WS, I have connected.");
+        } catch (e) {
+          console.log("error on send")
+          console.error(e)
+        }
+      };
 
-    ws.onclose = (event) => {
-      console.debug("onclose", event);
-    };
+      ws.onclose = (event) => {
+        console.debug("onclose", event);
+      };
 
-    ws.onerror = (event) => {
-      console.debug("onerror", event);
-    };
+      ws.onerror = (event) => {
+        console.debug("onerror", event);
+      };
 
-    function closeWs() {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
+      function closeWs() {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        }
       }
+      window.addEventListener("unload", closeWs);
+      window.onbeforeunload = closeWs;
+    } catch (e) {
+      console.error(e)
     }
-    window.addEventListener("unload", closeWs);
-    window.onbeforeunload = closeWs;
   } else {
     setBody([...body, "Uh oh! You need a Name and a RoomCode!"]);
   }
