@@ -67,7 +67,6 @@ export class RoomAppStack extends cdk.Stack {
 
     const environment = {
       CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      // ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
       NODE_ENV: "production",
     };
 
@@ -110,10 +109,7 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    const ENDPOINT = `${webSocketApi.apiEndpoint.replace(
-      /^wss:\/\//,
-      "https://"
-    )}/${stageName}/`;
+    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${stageName}`
     connectFn.addEnvironment("ENDPOINT", ENDPOINT);
     disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
     defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
