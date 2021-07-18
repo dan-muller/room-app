@@ -73,14 +73,19 @@ namespace DynamoClient {
             });
     };
 
-    type Connection = {
+    export type Connection = {
         Connected: boolean;
         ConnectionId: string;
         Name: string;
     };
 
+    type ListConnectionsOptions = {
+        filter?: (connection: Connection) => boolean
+    }
+
     export const listConnections = async (
-        RoomCode: string
+        RoomCode: string,
+        options?: ListConnectionsOptions
     ): Promise<Connection[]> => {
         const KeyConditionExpression = "PK = :RoomCode";
         const ExpressionAttributeValues = {":RoomCode": RoomCode};
@@ -102,6 +107,18 @@ namespace DynamoClient {
                         {}
                     ) as Record<string, Connection>
                 );
+                if (options?.filter) {
+                    const FilteredConnections = Connections.filter(options.filter)
+                    console.log({
+                        TableName,
+                        KeyConditionExpression,
+                        ExpressionAttributeValues,
+                        Items,
+                        Connections,
+                        FilteredConnections,
+                    });
+                    return FilteredConnections;
+                }
                 console.log({
                     TableName,
                     KeyConditionExpression,
@@ -120,55 +137,53 @@ namespace ApiClient {
         throw new Error("The environment variable ENDPOINT must be set.");
     }
     const Api = new ApiGatewayManagementApi({
-      endpoint: process.env.ENDPOINT,
+        endpoint: process.env.ENDPOINT,
     });
 
     const postToUser = () => {
-      // const PostToUser = Api.postToConnection(
-      //     {
-      //         ConnectionId,
-      //         Data: Buffer.from(JSON.stringify({Connections})),
-      //     },
-      //     (err, data) => {
-      //         console.log("PostToUser err:", err);
-      //         console.log("PostToUser data:", data);
-      //     }
-      // ).promise();
+        // const PostToUser = Api.postToConnection(
+        //     {
+        //         ConnectionId,
+        //         Data: Buffer.from(JSON.stringify({Connections})),
+        //     },
+        //     (err, data) => {
+        //         console.log("PostToUser err:", err);
+        //         console.log("PostToUser data:", data);
+        //     }
+        // ).promise();
     }
 
-    export const publishEventToConnections = async (
-        ConnectionId: string,
-        RoomCode: string,
+    export const postToConnections = async (
+        Connections: DynamoClient.Connection[],
         Event: any
     ) => {
-      const Connections = await DynamoClient.listConnections(RoomCode);
-      const PostToConnections = Promise.all(
-          Connections.filter((Connection) => Connection.Connected).map(
-              async ({ConnectionId}) =>
-                  Api.postToConnection(
-                      {
-                          ConnectionId,
-                          Data: Buffer.from(JSON.stringify({Event})),
-                      },
-                      (err, data) => {
-                          console.log("PostToConnections err:", err);
-                          console.log("ApiClient PostToConnections data:", data);
+        const PostToConnections = Promise.all(
+            Connections.map(
+                async ({ConnectionId}) =>
+                    Api.postToConnection(
+                        {
+                            ConnectionId,
+                            Data: Buffer.from(JSON.stringify({Event})),
+                        },
+                        (err, data) => {
+                            console.log("PostToConnections err:", err);
+                            console.log("ApiClient PostToConnections data:", data);
 
-                      }
-                  ).promise().then((data) => {
-                      console.log("PostToConnections then data:", data);
-                  }, reason => (
-                      console.error("Failed to post to connections: ", reason)
-                  ))
-          )
-      );
+                        }
+                    ).promise().then((data) => {
+                        console.log("PostToConnections then data:", data);
+                    }, reason => (
+                        console.error("Failed to post to connections: ", reason)
+                    ))
+            )
+        );
 
-      console.log({
-          Api,
-          PostToConnections: await PostToConnections,
-      });
+        console.log({
+            Api,
+            PostToConnections: await PostToConnections,
+        });
 
-      return await PostToConnections;
+        return await PostToConnections;
     };
 }
 
@@ -178,11 +193,13 @@ export const connectHandler: Handler = async (event) => {
         const ConnectionId = event.requestContext.connectionId;
         const RoomCode = event.queryStringParameters.RoomCode;
         const Name = event.queryStringParameters.Name;
-        console.log("Connect Event: write connect event to dynamo");
+
         const Event = await DynamoClient.connect(RoomCode, ConnectionId, Name);
-        console.log("Connect Event: publish event to ws");
-        await ApiClient.publishEventToConnections(ConnectionId, RoomCode, Event);
-        return {statusCode: 200, body: "Connected."};
+        const Connections = await DynamoClient.listConnections(RoomCode, {
+            filter: (Connection) => Connection.Connected
+        });
+        await ApiClient.postToConnections(Connections, Event);
+        return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
     } catch (e) {
         console.error("error!", e);
         return {
@@ -199,8 +216,11 @@ export const disconnectHandler: Handler = async (event) => {
         const {RoomCode} = await DynamoClient.getRoomInfo(ConnectionId);
         if (RoomCode) {
             const Event = await DynamoClient.disconnect(RoomCode, ConnectionId);
-            await ApiClient.publishEventToConnections(ConnectionId, RoomCode, Event);
-            return {statusCode: 200, body: "Disconnected."};
+            const Connections = await DynamoClient.listConnections(RoomCode, {
+                filter: (Connection) => Connection.Connected
+            });
+            await ApiClient.postToConnections(Connections, Event);
+            return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
         }
         return {
             statusCode: 500,
@@ -219,11 +239,14 @@ export const defaultHandler: Handler = async (event) => {
     console.log("Default Event:", event);
     try {
         const ConnectionId = event.requestContext.connectionId;
-
+        const Event = event.body
         const {RoomCode} = await DynamoClient.getRoomInfo(ConnectionId);
         if (RoomCode) {
-            await ApiClient.publishEventToConnections(ConnectionId, RoomCode, event.body);
-            return {statusCode: 200, body: `Echo: "${event.body}"`};
+            const Connections = await DynamoClient.listConnections(RoomCode, {
+                filter: (Connection) => Connection.Connected
+            });
+            await ApiClient.postToConnections(Connections, Event);
+            return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
         }
         return {
             statusCode: 500,
