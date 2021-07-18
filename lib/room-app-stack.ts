@@ -67,33 +67,29 @@ export class RoomAppStack extends cdk.Stack {
 
     const environment = {
       CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
+      // ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
       NODE_ENV: "production",
     };
 
-    const connectFn = new lambda.Function(this, "ConnectionHandler", {
+    const lambdaProps = {
       code: lambda.Code.fromAsset("backend"),
       environment,
-      handler: "connections.connectHandler",
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
+    };
+
+    const connectFn = new lambda.Function(this, "ConnectionHandler", {
+      ...lambdaProps,
+      handler: "connections.connectHandler",
     });
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
-      code: lambda.Code.fromAsset("backend"),
-      environment,
+      ...lambdaProps,
       handler: "connections.disconnectHandler",
-      memorySize: 3000,
-      runtime: lambda.Runtime.NODEJS_14_X,
-      timeout: cdk.Duration.seconds(20),
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
-      code: lambda.Code.fromAsset("backend"),
-      environment,
+      ...lambdaProps,
       handler: "connections.defaultHandler",
-      memorySize: 3000,
-      runtime: lambda.Runtime.NODEJS_14_X,
-      timeout: cdk.Duration.seconds(20),
     });
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
@@ -113,6 +109,14 @@ export class RoomAppStack extends cdk.Stack {
         }),
       },
     });
+
+    const ENDPOINT = `${webSocketApi.apiEndpoint.replace(
+      "wss://",
+      "https://"
+    )}/ws/`;
+    connectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
 
     const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
@@ -183,5 +187,6 @@ export class RoomAppStack extends cdk.Stack {
       value: webSocketApi.apiEndpoint,
     });
     new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
+    new cdk.CfnOutput(this, "env.ENDPOINT", { value: ENDPOINT });
   }
 }
