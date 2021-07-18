@@ -134,7 +134,7 @@ namespace ApiClient {
     const PostToUser = Api.postToConnection(
       {
         ConnectionId,
-        Data: Buffer.from(Connections),
+        Data: Buffer.from(JSON.stringify({ Connections })),
       },
       (err, data) => {
         console.log("ApiClient publishEvent postToConnection err:", err);
@@ -150,7 +150,7 @@ namespace ApiClient {
       Api.postToConnection(
         {
           ConnectionId,
-          Data: Buffer.from(Event),
+          Data: Buffer.from(JSON.stringify({ Event })),
         },
         (err, data) => {
           console.log("ApiClient publishEvent postToConnection err:", err);
