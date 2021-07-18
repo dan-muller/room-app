@@ -137,35 +137,36 @@ namespace ApiClient {
         Data: Buffer.from(JSON.stringify({ Connections })),
       },
       (err, data) => {
-        console.log("ApiClient publishEvent postToConnection err:", err);
-        console.log("ApiClient publishEvent postToConnection data:", data);
+        console.log("PostToUser err:", err);
+        console.log("PostToUser data:", data);
       }
     ).promise();
 
     console.log("ApiClient publishEvent PostToConnections");
 
-    const PostToConnections = Connections.filter(
-      (Connection) => Connection.Connected
-    ).map(async ({ ConnectionId }) =>
-      Api.postToConnection(
-        {
-          ConnectionId,
-          Data: Buffer.from(JSON.stringify({ Event })),
-        },
-        (err, data) => {
-          console.log("ApiClient publishEvent postToConnection err:", err);
-          console.log("ApiClient publishEvent postToConnection data:", data);
-        }
-      ).promise()
+    const PostToConnections = Promise.all(
+      Connections.filter((Connection) => Connection.Connected).map(
+        async ({ ConnectionId }) =>
+          Api.postToConnection(
+            {
+              ConnectionId,
+              Data: Buffer.from(JSON.stringify({ Event })),
+            },
+            (err, data) => {
+              console.log("PostToConnections err:", err);
+              console.log("ApiClient PostToConnections data:", data);
+            }
+          ).promise()
+      )
     );
 
     console.log({
       Api,
       PostToUser: await PostToUser,
-      PostToConnections: await Promise.all(PostToConnections),
+      PostToConnections: await PostToConnections,
     });
 
-    return [PostToUser, ...PostToConnections];
+    return await Promise.all([PostToUser, PostToConnections]);
   };
 }
 

@@ -111,9 +111,9 @@ export class RoomAppStack extends cdk.Stack {
     });
 
     const ENDPOINT = `${webSocketApi.apiEndpoint.replace(
-      "wss://",
+      /^wss:\/\//,
       "https://"
-    )}/ws/`;
+    )}/${stageName}/`;
     connectFn.addEnvironment("ENDPOINT", ENDPOINT);
     disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
     defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
@@ -187,6 +187,6 @@ export class RoomAppStack extends cdk.Stack {
       value: webSocketApi.apiEndpoint,
     });
     new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
-    new cdk.CfnOutput(this, "env.ENDPOINT", { value: ENDPOINT });
+    new cdk.CfnOutput(this, "ENDPOINT", { value: ENDPOINT });
   }
 }
