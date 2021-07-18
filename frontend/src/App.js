@@ -2,7 +2,7 @@ import "./App.css";
 import React from "react";
 
 const App = () => {
-  const [body, setBody] = React.useState([]);
+  const [body, setBody] = React.useState(["Events Show up here"]);
   console.debug("Body:", body);
 
   const params = Object.fromEntries(
@@ -27,8 +27,11 @@ const App = () => {
 
       ws.onopen = (event) => {
         console.debug("onopen", event);
+        setBody([...body, event]);
         try {
-          ws.send("Hello WS, I have connected.");
+          const event = JSON.stringify({body: "Hello WS, I have connected."})
+          console.log("sending", event)
+          ws.send(event);
         } catch (e) {
           console.log("error on send")
           console.error(e)
@@ -37,17 +40,19 @@ const App = () => {
 
       ws.onclose = (event) => {
         console.debug("onclose", event);
+        setBody([...body, event]);
       };
 
       ws.onerror = (event) => {
         console.debug("onerror", event);
+        setBody([...body, event]);
       };
 
-      function closeWs() {
+      const closeWs = () => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.close();
         }
-      }
+      };
       window.addEventListener("unload", closeWs);
       window.onbeforeunload = closeWs;
     } catch (e) {
@@ -60,9 +65,11 @@ const App = () => {
   return (
     <div className="App">
       <body>
-        {body.map((text) => (
-          <div>{text}</div>
-        ))}
+        <ul>
+          {body.map((text) => (
+              <li>{text}</li>
+          ))}
+        </ul>
       </body>
     </div>
   );
