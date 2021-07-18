@@ -129,6 +129,9 @@ namespace ApiClient {
     const Api = new ApiGatewayManagementApi({
       endpoint: process.env.ENDPOINT,
     });
+    const Api2 = new ApiGatewayManagementApi({
+      endpoint: process.env.ENDPOINT2,
+    });
 
     console.log("ApiClient publishEvent PostToUser");
     const PostToUser = Api.postToConnection(
@@ -141,32 +144,45 @@ namespace ApiClient {
         console.log("PostToUser data:", data);
       }
     ).promise();
+    const PostToUser2 = Api2.postToConnection(
+        {
+          ConnectionId,
+          Data: Buffer.from(JSON.stringify({ Connections })),
+        },
+        (err, data) => {
+          console.log("PostToUser err:", err);
+          console.log("PostToUser data:", data);
+        }
+    ).promise();
 
     console.log("ApiClient publishEvent PostToConnections");
 
-    const PostToConnections = Promise.all(
-      Connections.filter((Connection) => Connection.Connected).map(
-        async ({ ConnectionId }) =>
-          Api.postToConnection(
-            {
-              ConnectionId,
-              Data: Buffer.from(JSON.stringify({ Event })),
-            },
-            (err, data) => {
-              console.log("PostToConnections err:", err);
-              console.log("ApiClient PostToConnections data:", data);
-            }
-          ).promise()
-      )
-    );
+    // const PostToConnections = Promise.all(
+    //   Connections.filter((Connection) => Connection.Connected).map(
+    //     async ({ ConnectionId }) =>
+    //       Api.postToConnection(
+    //         {
+    //           ConnectionId,
+    //           Data: Buffer.from(JSON.stringify({ Event })),
+    //         },
+    //         (err, data) => {
+    //           console.log("PostToConnections err:", err);
+    //           console.log("ApiClient PostToConnections data:", data);
+    //         }
+    //       ).promise()
+    //   )
+    // );
 
     console.log({
       Api,
       PostToUser: await PostToUser,
-      PostToConnections: await PostToConnections,
+      // PostToConnections: await PostToConnections,
     });
 
-    return await Promise.all([PostToUser, PostToConnections]);
+    return await Promise.all([
+        PostToUser,
+      // PostToConnections
+    ]);
   };
 }
 
