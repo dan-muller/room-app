@@ -130,7 +130,7 @@ namespace ApiClient {
       endpoint: process.env.ENDPOINT,
     });
 
-    const PostToUser = await Api.postToConnection({
+    const PostToUser = Api.postToConnection({
       ConnectionId: ConnectionId,
       Data: JSON.stringify({ Connections }),
     }).promise();
@@ -160,15 +160,15 @@ export const connectHandler: Handler = async (event) => {
     const ConnectionId = event.requestContext.connectionId;
     const RoomCode = event.queryStringParameters.RoomCode;
     const Name = event.queryStringParameters.Name;
-
+    console.log("Connect Event: write connect event to dynamo");
     const Event = await DynamoClient.connect(RoomCode, ConnectionId, Name);
+    console.log("Connect Event: publish event to ws");
     await ApiClient.publishEvent(ConnectionId, RoomCode, Event);
-
     return { statusCode: 200, body: "Connected." };
   } catch (e) {
     console.error("error!", e);
     return {
-      statusCode: 501,
+      statusCode: 500,
       body: "Failed to connect:" + JSON.stringify(e),
     };
   }
@@ -182,17 +182,16 @@ export const disconnectHandler: Handler = async (event) => {
     if (RoomCode) {
       const Event = await DynamoClient.disconnect(RoomCode, ConnectionId);
       await ApiClient.publishEvent(ConnectionId, RoomCode, Event);
-
       return { statusCode: 200, body: "Disconnected." };
     }
     return {
-      statusCode: 501,
+      statusCode: 500,
       body: "Failed to disconnect: RoomCode for ConnectionId not found.",
     };
   } catch (e) {
     console.error("error!", e);
     return {
-      statusCode: 501,
+      statusCode: 500,
       body: "Failed to disconnect:" + JSON.stringify(e),
     };
   }
@@ -206,10 +205,14 @@ export const defaultHandler: Handler = async (event) => {
     const { RoomCode } = await DynamoClient.getRoomInfo(ConnectionId);
     if (RoomCode) {
       await ApiClient.publishEvent(ConnectionId, RoomCode, event.body);
+      return { statusCode: 200, body: `Echo: "${event.body}"` };
     }
-
-    return { statusCode: 200, body: `Echo: "${event.body}"` };
+    return {
+      statusCode: 500,
+      body: "RoomCode for ConnectionId not found.",
+    };
   } catch (e) {
+    console.error("error!", e);
     return { statusCode: 500, body: JSON.stringify(e) };
   }
 };

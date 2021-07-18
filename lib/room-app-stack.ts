@@ -3,6 +3,7 @@ import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as cdk from "@aws-cdk/core";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
+import * as iam from "@aws-cdk/aws-iam";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
@@ -113,11 +114,32 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    new apigwv2.WebSocketStage(this, "ProdStage", {
+    const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
       autoDeploy: true,
     });
+
+    const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`;
+
+    connectFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
+    disconnectFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
+    defaultFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
 
     distro.addBehavior(
       `/${stageName}/*`,
@@ -160,5 +182,6 @@ export class RoomAppStack extends cdk.Stack {
     new cdk.CfnOutput(this, "WSAPIEndpoint", {
       value: webSocketApi.apiEndpoint,
     });
+    new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
   }
 }
