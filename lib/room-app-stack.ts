@@ -109,20 +109,16 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${stageName}/`
-    const ENDPOINT2 = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${stageName}/`
-    connectFn.addEnvironment("ENDPOINT", ENDPOINT);
-    connectFn.addEnvironment("ENDPOINT2", ENDPOINT2);
-    disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
-    disconnectFn.addEnvironment("ENDPOINT2", ENDPOINT2);
-    defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
-    defaultFn.addEnvironment("ENDPOINT2", ENDPOINT2);
-
     const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
       autoDeploy: true,
     });
+
+    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/`
+    connectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
 
     const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`;
 
@@ -188,6 +184,5 @@ export class RoomAppStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
     new cdk.CfnOutput(this, "ENDPOINT", { value: ENDPOINT });
-    new cdk.CfnOutput(this, "ENDPOINT2", { value: ENDPOINT2 });
   }
 }

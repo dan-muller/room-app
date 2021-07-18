@@ -129,9 +129,6 @@ namespace ApiClient {
     const Api = new ApiGatewayManagementApi({
       endpoint: process.env.ENDPOINT,
     });
-    const Api2 = new ApiGatewayManagementApi({
-      endpoint: process.env.ENDPOINT2,
-    });
 
     console.log("ApiClient publishEvent PostToUser");
     const PostToUser = Api.postToConnection(
@@ -143,16 +140,6 @@ namespace ApiClient {
         console.log("PostToUser err:", err);
         console.log("PostToUser data:", data);
       }
-    ).promise();
-    const PostToUser2 = Api2.postToConnection(
-        {
-          ConnectionId,
-          Data: Buffer.from(JSON.stringify({ Connections })),
-        },
-        (err, data) => {
-          console.log("PostToUser err:", err);
-          console.log("PostToUser data:", data);
-        }
     ).promise();
 
     console.log("ApiClient publishEvent PostToConnections");
