@@ -187,6 +187,14 @@ namespace ApiClient {
     };
 }
 
+const publishToConnections = async (RoomCode: string, ConnectionId: string, Event: any) => {
+    const Connections = await DynamoClient.listConnections(RoomCode, {
+        filter: (Connection) => Connection.Connected && Connection.ConnectionId !== ConnectionId
+    });
+    await ApiClient.postToConnections(Connections, Event);
+    return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
+};
+
 export const connectHandler: Handler = async (event) => {
     console.log("Connect Event:", event);
     try {
@@ -195,17 +203,10 @@ export const connectHandler: Handler = async (event) => {
         const Name = event.queryStringParameters.Name;
 
         const Event = await DynamoClient.connect(RoomCode, ConnectionId, Name);
-        const Connections = await DynamoClient.listConnections(RoomCode, {
-            filter: (Connection) => Connection.Connected
-        });
-        await ApiClient.postToConnections(Connections, Event);
-        return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
+        return publishToConnections(RoomCode, ConnectionId, Event)
     } catch (e) {
         console.error("error!", e);
-        return {
-            statusCode: 500,
-            body: "Failed to connect:" + JSON.stringify(e),
-        };
+        return { statusCode: 500,  body: "Failed to connect:" + JSON.stringify(e) };
     }
 };
 
@@ -214,13 +215,10 @@ export const disconnectHandler: Handler = async (event) => {
     try {
         const ConnectionId = event.requestContext.connectionId;
         const {RoomCode} = await DynamoClient.getRoomInfo(ConnectionId);
+
         if (RoomCode) {
             const Event = await DynamoClient.disconnect(RoomCode, ConnectionId);
-            const Connections = await DynamoClient.listConnections(RoomCode, {
-                filter: (Connection) => Connection.Connected
-            });
-            await ApiClient.postToConnections(Connections, Event);
-            return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
+            return publishToConnections(RoomCode, ConnectionId, Event)
         }
         return {
             statusCode: 500,
@@ -228,10 +226,7 @@ export const disconnectHandler: Handler = async (event) => {
         };
     } catch (e) {
         console.error("error!", e);
-        return {
-            statusCode: 500,
-            body: "Failed to disconnect:" + JSON.stringify(e),
-        };
+        return { statusCode: 500, body: "Failed to disconnect:" + JSON.stringify(e) };
     }
 };
 
@@ -241,17 +236,11 @@ export const defaultHandler: Handler = async (event) => {
         const ConnectionId = event.requestContext.connectionId;
         const Event = event.body
         const {RoomCode} = await DynamoClient.getRoomInfo(ConnectionId);
+
         if (RoomCode) {
-            const Connections = await DynamoClient.listConnections(RoomCode, {
-                filter: (Connection) => Connection.Connected
-            });
-            await ApiClient.postToConnections(Connections, Event);
-            return {statusCode: 200, body: Buffer.from(JSON.stringify({Connections}))};
+            return await publishToConnections(RoomCode, ConnectionId, Event);
         }
-        return {
-            statusCode: 500,
-            body: "RoomCode for ConnectionId not found.",
-        };
+        return { statusCode: 500, body: "RoomCode for ConnectionId not found." };
     } catch (e) {
         console.error("error!", e);
         return {statusCode: 500, body: JSON.stringify(e)};
