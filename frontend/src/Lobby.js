@@ -13,6 +13,8 @@ const WebSocketState = {
 const LobbyComponent = ({ ws, events, addEvent }) => {
   const [message, setMessage] = React.useState("Hello WS, I have connected.");
 
+  ws.onmessage = (event) => addEvent("onmessage", JSON.parse(event.data));
+
   const sendMessage = () => {
     if (ws.readyState !== WebSocket.OPEN) {
       addEvent("error", `WebSocket state is ${WebSocketState[ws.readyState]}`);
@@ -60,7 +62,7 @@ const LobbyComponent = ({ ws, events, addEvent }) => {
   );
 };
 
-const useWebSocket = (RoomCode, Name, addEvent) => {
+const useWebSocket = (RoomCode, Name) => {
   let ws = null;
   if (RoomCode && Name) {
     const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
@@ -76,8 +78,7 @@ const useWebSocket = (RoomCode, Name, addEvent) => {
       window.addEventListener("unload", closeWs);
       window.onbeforeunload = closeWs;
 
-      ws.onmessage = (event) => addEvent("onmessage", JSON.parse(event.data));
-      ws.onopen = (event) => addEvent("onopen", event);
+      ws.onopen = (event) => console.debug("onopen", event);
       ws.onclose = (event) => console.debug("onclose", event);
       ws.onerror = (event) => console.error("onerror", event);
     } catch (e) {
@@ -102,7 +103,7 @@ const useEvents = () => {
 
 const LobbyContainer = ({ Name, RoomCode }) => {
   const { events, addEvent } = useEvents();
-  const ws = useWebSocket(RoomCode, Name, addEvent);
+  const ws = useWebSocket(RoomCode, Name);
   return <LobbyComponent ws={ws} events={events} addEvent={addEvent} />;
 };
 
