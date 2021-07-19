@@ -3,11 +3,22 @@ import React from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
+const WebSocketState = {
+  [WebSocket.CLOSED]: "CLOSED",
+  [WebSocket.CLOSING]: "CLOSING",
+  [WebSocket.CONNECTING]: "CONNECTING",
+  [WebSocket.OPEN]: "OPEN",
+};
+
 const LobbyComponent = ({ ws, events, addEvent }) => {
   const [message, setMessage] = React.useState("Hello WS, I have connected.");
 
   const sendMessage = () => {
-    if (message && ws.readyState === WebSocket.OPEN) {
+    if (ws.readyState !== WebSocket.OPEN) {
+      addEvent("error", `WebSocket state is ${WebSocketState[ws.readyState]}`);
+      return;
+    }
+    if (message) {
       try {
         console.log("Message: ", message);
         ws.send(message);
@@ -16,7 +27,9 @@ const LobbyComponent = ({ ws, events, addEvent }) => {
         console.error("Failed to send message:", message);
         addEvent("error", e);
       }
+      return;
     }
+    addEvent("error", `Please enter a message.`);
   };
 
   return (
