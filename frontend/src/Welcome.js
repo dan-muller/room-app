@@ -17,6 +17,7 @@ const Welcome = () => {
         placeholder="Enter name"
       />
       <Button
+        disabled={!roomCode || !name}
         onClick={() => {
           if (name && roomCode) {
             document.location.search = `?RoomCode=${roomCode}&Name=${name}`;

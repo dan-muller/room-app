@@ -3,33 +3,10 @@ import React from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
-const useEvents = () => {
-  const [events, setEvents] = React.useState([
-    { Event: "Events Show up here" },
-    { EventType: "error", Event: "This is what an error looks like" },
-  ]);
-  const addEvent = (type, event) => {
-    console.debug(type, event);
-    setEvents([...events, { EventType: type, Event: event }]);
-  };
-  return { events, addEvent };
-};
-
-const LobbyComponent = ({ ws }) => {
+const LobbyComponent = ({ ws, events, addEvent }) => {
   const [message, setMessage] = React.useState("Hello WS, I have connected.");
-  const { events, addEvent } = useEvents();
-  console.debug("Events:", events);
 
-  try {
-    ws.onmessage = (event) => addEvent("onmessage", event);
-    ws.onopen = (event) => addEvent("onopen", event);
-    ws.onclose = (event) => console.debug("onclose", event);
-    ws.onerror = (event) => console.error("onerror", event);
-  } catch (e) {
-    addEvent("error", e);
-  }
-
-  const send = () => {
+  const sendMessage = () => {
     if (message && ws.readyState === WebSocket.OPEN) {
       try {
         console.log("Message: ", message);
@@ -49,7 +26,14 @@ const LobbyComponent = ({ ws }) => {
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Enter message"
       />
-      <Button onClick={() => send()}>Join</Button>
+      <Button
+        disabled={!message}
+        onClick={() => {
+          sendMessage();
+        }}
+      >
+        Send
+      </Button>
       <ul className="App-events">
         {events
           .filter(({ Event }) => Event)
@@ -63,7 +47,7 @@ const LobbyComponent = ({ ws }) => {
   );
 };
 
-const useWebSocket = (RoomCode, Name) => {
+const useWebSocket = (RoomCode, Name, addEvent) => {
   let ws = null;
   if (RoomCode && Name) {
     const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
@@ -78,6 +62,11 @@ const useWebSocket = (RoomCode, Name) => {
       };
       window.addEventListener("unload", closeWs);
       window.onbeforeunload = closeWs;
+
+      ws.onmessage = (event) => addEvent("onmessage", JSON.parse(event.data));
+      ws.onopen = (event) => addEvent("onopen", event);
+      ws.onclose = (event) => console.debug("onclose", event);
+      ws.onerror = (event) => console.error("onerror", event);
     } catch (e) {
       console.error(e);
     }
@@ -85,9 +74,23 @@ const useWebSocket = (RoomCode, Name) => {
   return ws;
 };
 
+const useEvents = () => {
+  const [events, setEvents] = React.useState([
+    { Event: "Events Show up here" },
+    { EventType: "error", Event: "This is what an error looks like" },
+  ]);
+  const addEvent = (type, event) => {
+    console.debug(type, event);
+    setEvents([...events, { EventType: type, Event: event }]);
+  };
+  console.debug("Events:", events);
+  return { events, addEvent };
+};
+
 const LobbyContainer = ({ Name, RoomCode }) => {
-  const ws = useWebSocket(RoomCode, Name);
-  return <LobbyComponent ws={ws} />;
+  const { events, addEvent } = useEvents();
+  const ws = useWebSocket(RoomCode, Name, addEvent);
+  return <LobbyComponent ws={ws} events={events} addEvent={addEvent} />;
 };
 
 export default LobbyContainer;
