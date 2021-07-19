@@ -4,20 +4,29 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
+const useEvents = () => {
+  const [events, setEvents] = React.useState([
+    { Event: "Events Show up here" },
+    { EventType: "error", Event: "This is what an error looks like" },
+  ]);
+  const addEvent = (type, event) => {
+    console.debug(type, event);
+    setEvents([...events, { EventType: type, Event: event }]);
+  };
+  return { events, addEvent };
+};
+
 const Body = ({ ws }) => {
-  const [body, setBody] = React.useState(["Events Show up here"]);
-  const [error, setError] = React.useState();
-  console.debug("Body:", body);
+  const { events, addEvent } = useEvents();
+  console.debug("Events:", events);
 
   try {
     ws.onmessage = (event) => {
-      console.debug("onmessage", event);
-      setBody([...body, JSON.stringify({ onmessage: event })]);
+      addEvent("onmessage", event);
     };
 
     ws.onopen = (event) => {
-      console.debug("onopen", event);
-      setBody([...body, JSON.stringify({ onopen: event })]);
+      addEvent("onopen", event);
       try {
         const event = JSON.stringify({
           body: "Hello WS, I have connected.",
@@ -25,19 +34,17 @@ const Body = ({ ws }) => {
         console.log("sending", event);
         ws.send(event);
       } catch (e) {
-        console.log("error on send");
-        console.error(e);
+        console.error("error on send");
+        addEvent("error", e);
       }
     };
 
     ws.onclose = (event) => {
       console.debug("onclose", event);
-      setBody([...body, JSON.stringify({ onclose: event })]);
     };
 
     ws.onerror = (event) => {
-      console.debug("onerror", event);
-      setBody([...body, JSON.stringify({ onerror: event })]);
+      console.error("onerror", event);
     };
 
     const closeWs = () => {
@@ -48,17 +55,20 @@ const Body = ({ ws }) => {
     window.addEventListener("unload", closeWs);
     window.onbeforeunload = closeWs;
   } catch (e) {
-    setError(e);
+    addEvent("error", e);
   }
 
   return (
     <div className="App-body">
-      <div className="App-error">{error}</div>
       <img src={logo} className="App-logo" alt="logo" />
       <ul className="App-events">
-        {body.map((text) => (
-          <li>{text}</li>
-        ))}
+        {events
+          .filter(({ Event }) => Event)
+          .map(({ EventType, Event }) => (
+            <li className={EventType === "error" ? "App-error" : "App-events"}>
+              {JSON.stringify(Event)}
+            </li>
+          ))}
       </ul>
     </div>
   );

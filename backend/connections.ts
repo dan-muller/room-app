@@ -234,8 +234,8 @@ export const defaultHandler: Handler = async (event) => {
   console.log("Default Event:", event);
   try {
     const ConnectionId = event.requestContext.connectionId;
-    const Event = event.body;
-    const { RoomCode } = await DynamoClient.getRoomInfo(ConnectionId);
+    const { RoomCode, Name } = await DynamoClient.getRoomInfo(ConnectionId);
+    const Event = { ConnectionId, Message: event.body, Name, RoomCode };
 
     if (RoomCode) {
       const Connections = publishToConnections(RoomCode, ConnectionId, Event);
