@@ -2,6 +2,7 @@ import React from "react";
 
 import { Button } from "./Button";
 import { Input } from "./Input";
+import * as stream from "stream";
 
 const WebSocketState = {
   [WebSocket.CLOSED]: "CLOSED",
@@ -15,7 +16,7 @@ const LobbyComponent = ({ ws, events, addEvent }) => {
 
   ws.onmessage = (event) => addEvent("onmessage", JSON.parse(event.data));
 
-  const sendMessage = () => {
+  const sendMessage = (message) => {
     if (ws.readyState !== WebSocket.OPEN) {
       addEvent("error", `WebSocket state is ${WebSocketState[ws.readyState]}`);
       return;
@@ -44,20 +45,25 @@ const LobbyComponent = ({ ws, events, addEvent }) => {
       <Button
         disabled={!message}
         onClick={() => {
-          sendMessage();
+          try {
+            sendMessage(message);
+            console.debug("sent message:", message);
+          } catch (e) {
+            console.error(e);
+          }
         }}
       >
         Send
       </Button>
-      <ul className="App-events">
-        {events
-          .filter(({ Event }) => Event)
-          .map(({ EventType, Event }) => (
-            <li className={EventType === "error" ? "App-error" : "App-events"}>
-              {JSON.stringify(Event)}
-            </li>
-          ))}
-      </ul>
+      {/*<ul className="App-events">*/}
+      {/*  {events*/}
+      {/*    .filter(({ Event }) => Event)*/}
+      {/*    .map(({ EventType, Event }) => (*/}
+      {/*      <li className={EventType === "error" ? "App-error" : "App-events"}>*/}
+      {/*        {JSON.stringify(Event)}*/}
+      {/*      </li>*/}
+      {/*    ))}*/}
+      {/*</ul>*/}
     </div>
   );
 };
