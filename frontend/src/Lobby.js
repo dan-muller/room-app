@@ -3,37 +3,8 @@ import React from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
-const WebSocketState = {
-  [WebSocket.CLOSED]: "CLOSED",
-  [WebSocket.CLOSING]: "CLOSING",
-  [WebSocket.CONNECTING]: "CONNECTING",
-  [WebSocket.OPEN]: "OPEN",
-};
-
-const LobbyComponent = ({ ws, events, addEvent }) => {
+const LobbyComponent = ({ sendMessage }) => {
   const [message, setMessage] = React.useState("Hello WS, I have connected.");
-
-  ws.onmessage = (event) => addEvent("onmessage", JSON.parse(event.data));
-
-  const sendMessage = (message) => {
-    if (ws.readyState !== WebSocket.OPEN) {
-      addEvent("error", `WebSocket state is ${WebSocketState[ws.readyState]}`);
-      return;
-    }
-    if (message) {
-      try {
-        console.log("Message: ", message);
-        ws.send(message);
-        setMessage(null);
-      } catch (e) {
-        console.error("Failed to send message:", message);
-        addEvent("error", e);
-      }
-      return;
-    }
-    addEvent("error", `Please enter a message.`);
-  };
-
   return (
     <div className="App-body">
       <Input
@@ -44,72 +15,60 @@ const LobbyComponent = ({ ws, events, addEvent }) => {
       <Button
         disabled={!message}
         onClick={() => {
-          try {
-            sendMessage(message);
-            console.debug("sent message:", message);
-          } catch (e) {
-            console.error(e);
+          const success = sendMessage(message);
+          if (success) {
+            console.debug("Message sent.");
+            setMessage(undefined);
           }
         }}
       >
         Send
       </Button>
-      {/*<ul className="App-events">*/}
-      {/*  {events*/}
-      {/*    .filter(({ Event }) => Event)*/}
-      {/*    .map(({ EventType, Event }) => (*/}
-      {/*      <li className={EventType === "error" ? "App-error" : "App-events"}>*/}
-      {/*        {JSON.stringify(Event)}*/}
-      {/*      </li>*/}
-      {/*    ))}*/}
-      {/*</ul>*/}
     </div>
   );
 };
 
-const useWebSocket = (RoomCode, Name) => {
+const useWebSocket = (url) => {
   let ws = null;
-  if (RoomCode && Name) {
-    const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
-    console.debug("WS URL:", url);
-    try {
-      ws = new WebSocket(url);
+  try {
+    ws = new WebSocket(url);
 
-      const closeWs = () => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-      };
-      window.addEventListener("unload", closeWs);
-      window.onbeforeunload = closeWs;
+    const closeWs = () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+    window.addEventListener("unload", closeWs);
+    window.onbeforeunload = closeWs;
 
-      ws.onopen = (event) => console.debug("onopen", event);
-      ws.onclose = (event) => console.debug("onclose", event);
-      ws.onerror = (event) => console.error("onerror", event);
-    } catch (e) {
-      console.error(e);
-    }
+    ws.onclose = (event) => console.debug("onclose", event);
+    ws.onerror = (event) => console.error("onerror", event);
+    ws.onmessage = (event) => console.log("onmessage", event);
+    ws.onopen = (event) => console.debug("onopen", event);
+  } catch (e) {
+    console.error(e);
   }
   return ws;
 };
 
-const useEvents = () => {
-  const [events, setEvents] = React.useState([
-    { Event: "Events Show up here" },
-    { EventType: "error", Event: "This is what an error looks like" },
-  ]);
-  const addEvent = (type, event) => {
-    console.debug(type, event);
-    setEvents([...events, { EventType: type, Event: event }]);
-  };
-  console.debug("Events:", events);
-  return { events, addEvent };
-};
-
 const LobbyContainer = ({ Name, RoomCode }) => {
-  const { events, addEvent } = useEvents();
-  const ws = useWebSocket(RoomCode, Name);
-  return <LobbyComponent ws={ws} events={events} addEvent={addEvent} />;
+  const url = `wss://${window.location.host}/ws/?RoomCode=${RoomCode}&Name=${Name}`;
+  console.debug("WS URL:", url);
+  const ws = useWebSocket(url);
+
+  const sendMessage = (message) => {
+    if (message && ws && ws?.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(message);
+        return true;
+      } catch (e) {
+        console.error("Can not send message. Error: ", e);
+      }
+      return false;
+    }
+  };
+
+  return <LobbyComponent sendMessage={sendMessage} />;
 };
 
 export default LobbyContainer;
