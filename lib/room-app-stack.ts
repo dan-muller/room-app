@@ -3,6 +3,7 @@ import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
 import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as cdk from "@aws-cdk/core";
 import * as cloudfront from "@aws-cdk/aws-cloudfront";
+import * as iam from "@aws-cdk/aws-iam";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
@@ -64,39 +65,30 @@ export class RoomAppStack extends cdk.Stack {
       certificate,
     });
 
-    const connectFn = new lambda.Function(this, "ConnectionHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "connections.connectHandler",
+    const environment = {
+      CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
+      NODE_ENV: "production",
+    };
+
+    const lambdaProps = {
       code: lambda.Code.fromAsset("backend"),
+      environment,
       memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
+      runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
+    };
+
+    const connectFn = new lambda.Function(this, "ConnectionHandler", {
+      ...lambdaProps,
+      handler: "connections.connectHandler",
     });
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      ...lambdaProps,
       handler: "connections.disconnectHandler",
-      code: lambda.Code.fromAsset("backend"),
-      memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
-      timeout: cdk.Duration.seconds(20),
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      ...lambdaProps,
       handler: "connections.defaultHandler",
-      code: lambda.Code.fromAsset("backend"),
-      memorySize: 3000,
-      environment: {
-        NODE_ENV: "production",
-        ENDPOINT: `https://${distro.distributionDomainName}/ws/`,
-        CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      },
-      timeout: cdk.Duration.seconds(20),
     });
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
@@ -117,11 +109,36 @@ export class RoomAppStack extends cdk.Stack {
       },
     });
 
-    new apigwv2.WebSocketStage(this, "ProdStage", {
+    const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
       autoDeploy: true,
     });
+
+    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${webSocketStage.stageName}/`;
+    connectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
+    defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
+
+    const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`;
+    connectFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
+    disconnectFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
+    defaultFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [webSocketArn],
+        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+      })
+    );
 
     distro.addBehavior(
       `/${stageName}/*`,
@@ -164,5 +181,7 @@ export class RoomAppStack extends cdk.Stack {
     new cdk.CfnOutput(this, "WSAPIEndpoint", {
       value: webSocketApi.apiEndpoint,
     });
+    new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
+    new cdk.CfnOutput(this, "ENDPOINT", { value: ENDPOINT });
   }
 }
