@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Lobby = React.lazy(() => import('./Lobby'))
-const Welcome = React.lazy(() => import('./Welcome'))
+const Lobby = React.lazy(() => import('components/Lobby'))
+const Welcome = React.lazy(() => import('components/Welcome'))
 
 const StyledApp = styled.div`
   background-color: #282c34;
