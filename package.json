@@ -1,45 +1,19 @@
 {
-  "bin": {
-    "room-app": "bin/room-app.js"
-  },
-  "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.108.1",
-    "@aws-cdk/aws-apigatewayv2": "^1.108.1",
-    "@aws-cdk/aws-apigatewayv2-integrations": "^1.108.1",
-    "@aws-cdk/aws-certificatemanager": "^1.108.1",
-    "@aws-cdk/aws-cloudfront": "^1.108.1",
-    "@aws-cdk/aws-cloudfront-origins": "^1.108.1",
-    "@aws-cdk/aws-dynamodb": "^1.108.1",
-    "@aws-cdk/aws-lambda": "^1.108.1",
-    "@aws-cdk/aws-route53": "^1.108.1",
-    "@aws-cdk/aws-s3": "^1.108.1",
-    "@aws-cdk/core": "1.108.1",
-    "@cdk-turnkey/stackname": "^1.2.0",
-    "aws-sdk": "^2.927.0",
-    "source-map-support": "^0.5.16"
-  },
+  "name": "@room-app/monorepo",
+  "private": true,
   "devDependencies": {
-    "@aws-cdk/assert": "1.108.1",
-    "@types/jest": "^26.0.10",
-    "@types/node": "10.17.27",
-    "aws-cdk": "1.108.1",
-    "jest": "^27.0.4",
-    "prettier": "^2.3.1",
-    "ts-jest": "^27.0.3",
-    "ts-node": "^10.0.0",
-    "typescript": "~3.9.7"
-  },
-  "license": "Apache-2.0",
-  "name": "room-app",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/douglasnaphas/room-app"
+    "craco": "^0.0.3",
+    "lerna": "^4.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk"
+    "start": "lerna exec --scope @workspace/app -- yarn start",
+    "test": "lerna run test --since",
+    "new-version": "lerna version --conventional-commits --yes",
+    "diff": "lerna diff"
   },
-  "version": "0.1.0"
+  "workspaces": {
+    "packages": [
+      "packages/**"
+    ]
+  }
 }
