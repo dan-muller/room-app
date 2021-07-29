@@ -1,27 +1,17 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Handle a connect event within the Room App.",
-  "main": "connect/index.js",
   "dependencies": {
     "aws-sdk": "^2.927.0",
-    "aws-lambda": "^1.0.6",
-    "node": "^16.5.0"
+    "aws-lambda": "^1.0.6"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.77",
-    "@types/node": "^16.4.3",
-    "ts-node": "^10.1.0",
-    "ts-node-dev": "^1.1.8",
+    "@types/node": "^16.4.6",
     "typescript": "^4.3.5"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/douglasnaphas/room-app.git"
+    "build": "tsc"
   },
   "author": "Douglas Naphas <douglasnaphas@gmail.com>",
   "license": "Apache-2.0",
