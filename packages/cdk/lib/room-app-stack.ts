@@ -96,11 +96,10 @@ export class RoomAppStack extends cdk.Stack {
     }
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset('backend'),
+      code: lambda.Code.fromAsset('/node_modules/room-app-backend'),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
-      timeout: cdk.Duration.seconds(20),
     }
 
     const connectFn = new lambda.Function(this, 'ConnectionHandler', {

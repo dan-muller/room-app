@@ -3,52 +3,44 @@
     "room-app": "bin/room-app.js"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "^1.116.0",
-    "@aws-cdk/aws-apigatewayv2": "^1.116.0",
-    "@aws-cdk/aws-apigatewayv2-integrations": "^1.116.0",
-    "@aws-cdk/aws-certificatemanager": "^1.116.0",
-    "@aws-cdk/aws-cloudfront": "^1.116.0",
-    "@aws-cdk/aws-cloudfront-origins": "^1.116.0",
-    "@aws-cdk/aws-dynamodb": "^1.116.0",
-    "@aws-cdk/aws-lambda": "^1.116.0",
-    "@aws-cdk/aws-route53": "^1.116.0",
-    "@aws-cdk/aws-s3": "^1.116.0",
-    "@aws-cdk/core": "^1.116.0",
+    "@aws-cdk/aws-apigateway": "^1.108.1",
+    "@aws-cdk/aws-apigatewayv2": "^1.108.1",
+    "@aws-cdk/aws-apigatewayv2-integrations": "^1.108.1",
+    "@aws-cdk/aws-certificatemanager": "^1.108.1",
+    "@aws-cdk/aws-cloudfront": "^1.108.1",
+    "@aws-cdk/aws-cloudfront-origins": "^1.108.1",
+    "@aws-cdk/aws-dynamodb": "^1.108.1",
+    "@aws-cdk/aws-lambda": "^1.108.1",
+    "@aws-cdk/aws-route53": "^1.108.1",
+    "@aws-cdk/aws-s3": "^1.108.1",
+    "@aws-cdk/core": "1.108.1",
     "@cdk-turnkey/stackname": "^1.2.0",
-    "room-app-backend": "1.0.0",
     "aws-sdk": "^2.927.0",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.16",
+    "room-app-backend": "^1.0.0"
   },
   "devDependencies": {
-    "@aws-cdk/assert": "1.116.0",
-    "@types/jest": "^26.0.24",
+    "@aws-cdk/assert": "1.108.1",
+    "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
-    "aws-cdk": "1.116.0",
-    "jest": "^26.0.24",
-    "ts-jest": "^26.0.24",
-    "ts-node": "^10.1.0",
-    "typescript": "~4.3.5"
+    "aws-cdk": "1.108.1",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.1",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.0.0",
+    "typescript": "~3.9.7"
   },
-  "name": "room-app-cdk",
+  "license": "Apache-2.0",
+  "name": "room-app",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/douglasnaphas/room-app"
+  },
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk"
   },
-  "version": "1.0.0",
-  "jest": {
-    "preset": "ts-jest/presets/js-with-ts",
-    "verbose": true,
-    "roots": [
-      "src",
-      "hyperion",
-      "common"
-    ],
-    "modulePaths": [
-      "."
-    ],
-    "testEnvironment": "node",
-    "modulePathIgnorePatterns": [
-      ".*__mocks__.*"
-    ]
-  }
+  "version": "0.1.0"
 }
