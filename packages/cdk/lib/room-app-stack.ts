@@ -98,8 +98,16 @@ export class RoomAppStack extends cdk.Stack {
       NODE_ENV: 'production',
     }
 
+    const backendCodeAssetPath = path.join(
+      require.resolve('@room-app/backend'),
+      '..'
+    )
+
+    console.log('resolve lerna package:', require.resolve('@room-app/backend'))
+    console.log('backendCodeAssetPath:', backendCodeAssetPath)
+
     const lambdaProps = {
-      code: lambdaCodeFromNodeModules('@room-app/backend'),
+      code: lambda.Code.fromAsset(backendCodeAssetPath),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
