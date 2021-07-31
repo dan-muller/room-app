@@ -11,6 +11,7 @@ import * as origins from '@aws-cdk/aws-cloudfront-origins'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
+import * as path from 'path'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -97,9 +98,12 @@ export class RoomAppStack extends cdk.Stack {
     }
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset('/node_modules/room-app-backend', {
-        followSymlinks: SymlinkFollowMode.BLOCK_EXTERNAL,
-      }),
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '/node_modules/room-app-backend'),
+        {
+          followSymlinks: SymlinkFollowMode.BLOCK_EXTERNAL,
+        }
+      ),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
