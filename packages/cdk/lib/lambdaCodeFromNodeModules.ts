@@ -8,10 +8,11 @@ const defaultOptions: s3_assets.AssetOptions = {
 }
 
 const lambdaCodeFromNodeModules = (path: string, options = defaultOptions) => {
-  const importPath = join(__dirname, '../node_modules/', path)
+  const importPath = join('../node_modules/', path)
   try {
     import(importPath)
-  } catch {
+  } catch (e) {
+    console.error(e)
     throw new Error('Unable to import code from path: ' + importPath)
   }
   return lambda.Code.fromAsset(importPath, options)

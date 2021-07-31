@@ -43,7 +43,7 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack to the dev account 🚀
+      - name: Deploy the webapp stack 🚀
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
@@ -54,7 +54,7 @@ jobs:
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
 
-      - name: Deploy to the frontend bucket (dev account) 🚀
+      - name: Publish to frontend bucket 🎉
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
