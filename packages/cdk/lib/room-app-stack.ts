@@ -99,7 +99,7 @@ export class RoomAppStack extends cdk.Stack {
     }
 
     const lambdaProps = {
-      code: lambdaCodeFromNodeModules('@room-app/backeaaand'),
+      code: lambdaCodeFromNodeModules('@room-app/backend'),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
