@@ -40,6 +40,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
+        working-directory: packages/cdk
         run: |
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
@@ -49,6 +50,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
+        working-directory: packages/cdk
         run: |
           npx cdk bootstrap
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
@@ -59,5 +61,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
+        working-directory: packages/cdk
         run: |
           bash scripts/deploy-frontend.sh
