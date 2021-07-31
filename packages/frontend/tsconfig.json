@@ -19,12 +19,12 @@
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": true,
-    "target": "es5",
+    "target": "esnext",
     "typeRoots": [
       "./types",
       "./node_modules/@types"
-    ]
+    ],
+    "strict": true
   },
   "exclude": [
     "node_modules",

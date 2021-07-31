@@ -1,5 +1,5 @@
 {
-  "name": "@room-app/frontend",
+  "name": "room-app-frontend",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -17,6 +17,10 @@
     "@types/react": "^17.0.15",
     "@types/react-dom": "^17.0.9",
     "@types/styled-components": "^5.1.11",
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "eslint": "^7.17.0",
+    "eslint-config-prettier": "^7.1.0",
     "typescript": "^4.3.5",
     "web-vitals": "^1.1.2"
   },

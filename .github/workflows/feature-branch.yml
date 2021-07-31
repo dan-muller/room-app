@@ -27,62 +27,65 @@ jobs:
         run: |
           npm install
 
-      - name: Install frontend
-        working-directory: frontend
+      - name: Install dependencies
         run: |
-          npm install
-
-      - name: Install backend
-        working-directory: backend
-        run: |
-          npm install
-
-      - name: Build
-        run: |
-          npm run build
-
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          npm run build
-
-      - name: Build backend
-        working-directory: backend
-        run: |
-          npm run build
+          lerna bootstrap
 
       - name: Test
         run: |
-          npm run test -- test
+          lerna run test
 
-      - name: Test frontend
-        working-directory: frontend
-        run: |
-          npm test
-
-      - name: Identify dev account and region
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-1"
-        run: |
-          aws sts get-caller-identity
-          echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
-
-      - name: Deploy the webapp stack to the dev account
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-1"
-        run: |
-          npx cdk bootstrap
-          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
-          npx cdk deploy --require-approval never ${STACKNAME}
-
-      - name: Deploy to the frontend bucket (dev account)
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-1"
-        run: |
-          bash scripts/deploy-frontend.sh
+#      - name: Install backend
+#        working-directory: backend
+#        run: |
+#          npm install
+#
+#      - name: Build
+#        run: |
+#          npm run build
+#
+#      - name: Build frontend
+#        working-directory: frontend
+#        run: |
+#          npm run build
+#
+#      - name: Build backend
+#        working-directory: backend
+#        run: |
+#          npm run build
+#
+#      - name: Test
+#        run: |
+#          npm run test -- test
+#
+#      - name: Test frontend
+#        working-directory: frontend
+#        run: |
+#          npm test
+#
+#      - name: Identify dev account and region
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: "us-east-1"
+#        run: |
+#          aws sts get-caller-identity
+#          echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
+#
+#      - name: Deploy the webapp stack to the dev account
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: "us-east-1"
+#        run: |
+#          npx cdk bootstrap
+#          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
+#          npx cdk deploy --require-approval never ${STACKNAME}
+#
+#      - name: Deploy to the frontend bucket (dev account)
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+#          AWS_DEFAULT_REGION: "us-east-1"
+#        run: |
+#          bash scripts/deploy-frontend.sh
