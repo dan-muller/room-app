@@ -1,5 +1,6 @@
 {
-  "name": "room-app-monorepo",
+  "name": "@room-app/monorepo",
+  "private": true,
   "devDependencies": {
     "craco": "^0.0.3",
     "husky": "4.3.7",
@@ -11,6 +12,7 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build --parallel --since",
     "dev": "lerna exec --scope room-app-frontend -- npm start",
+    "install": "lerna exec --parallel --since -- npm install",
     "diff": "lerna diff",
     "new-version": "lerna version --conventional-commits --yes",
     "test": "lerna run test --parallel --since"

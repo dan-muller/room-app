@@ -1,7 +1,6 @@
 {
-  "name": "room-app-frontend",
+  "name": "@room-app/frontend",
   "version": "1.0.0",
-  "private": true,
   "dependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

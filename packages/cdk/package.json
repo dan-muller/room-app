@@ -1,4 +1,5 @@
 {
+  "name": "@room-app/cdk",
   "bin": {
     "room-app": "bin/room-app.js"
   },
@@ -15,10 +16,10 @@
     "@aws-cdk/aws-s3": "^1.108.1",
     "@aws-cdk/core": "1.108.1",
     "@cdk-turnkey/stackname": "^1.2.0",
+    "@room-app/backend": "^1.0.0",
+    "@room-app/frontend": "^1.0.0",
     "aws-sdk": "^2.927.0",
-    "source-map-support": "^0.5.16",
-    "room-app-backend": "^1.0.0",
-    "room-app-frontend": "^1.0.0"
+    "source-map-support": "^0.5.16"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.108.1",
@@ -32,7 +33,6 @@
     "typescript": "~3.9.7"
   },
   "license": "Apache-2.0",
-  "name": "room-app",
   "repository": {
     "type": "git",
     "url": "git://github.com/douglasnaphas/room-app"

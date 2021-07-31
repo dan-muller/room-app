@@ -103,6 +103,7 @@ dist
 .tern-port
 
 *.js
+*.js.map
 *.d.ts
 
 # CDK asset staging directory
@@ -111,11 +112,6 @@ cdk.out
 
 .DS_Store
 
-# Not using TypeScript yet in:
-!frontend/*.js
-!frontend/**.js
-!frontend/**/*.js
-
-!jest.config.js
-
 .idea
+
+**/build
