@@ -115,3 +115,4 @@ cdk.out
 .idea
 
 **/build
+/packages/frontend/build/
