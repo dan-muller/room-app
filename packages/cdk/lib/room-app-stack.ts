@@ -2,6 +2,8 @@ import * as acm from '@aws-cdk/aws-certificatemanager'
 import * as apigwv2 from '@aws-cdk/aws-apigatewayv2'
 import * as apigwv2i from '@aws-cdk/aws-apigatewayv2-integrations'
 import * as cdk from '@aws-cdk/core'
+import * as aws from '@aws-cdk/core'
+import { SymlinkFollowMode } from '@aws-cdk/core'
 import * as cloudfront from '@aws-cdk/aws-cloudfront'
 import * as iam from '@aws-cdk/aws-iam'
 import * as lambda from '@aws-cdk/aws-lambda'
@@ -9,7 +11,6 @@ import * as origins from '@aws-cdk/aws-cloudfront-origins'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
-import * as aws from '@aws-cdk/core'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -96,7 +97,9 @@ export class RoomAppStack extends cdk.Stack {
     }
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset('/node_modules/room-app-backend'),
+      code: lambda.Code.fromAsset('/node_modules/room-app-backend', {
+        followSymlinks: SymlinkFollowMode.BLOCK_EXTERNAL,
+      }),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
