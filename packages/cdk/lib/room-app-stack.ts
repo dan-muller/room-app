@@ -99,7 +99,7 @@ export class RoomAppStack extends cdk.Stack {
 
     const lambdaProps = {
       code: lambda.Code.fromAsset(
-        path.join(__dirname, '/node_modules/room-app-backend'),
+        path.join(__dirname, '../node_modules/room-app-backend'),
         {
           followSymlinks: SymlinkFollowMode.BLOCK_EXTERNAL,
         }
