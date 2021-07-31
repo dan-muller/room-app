@@ -1,6 +1,5 @@
 {
   "name": "@room-app/monorepo",
-  "private": true,
   "devDependencies": {
     "craco": "^0.0.3",
     "husky": "4.3.7",
@@ -8,24 +7,21 @@
     "lint-staged": "10.5.3",
     "prettier": "2.2.0"
   },
-  "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "build": "lerna run build --parallel --since",
-    "dev": "lerna exec --scope room-app-frontend -- npm start",
-    "install": "lerna exec --parallel --since -- npm install",
-    "diff": "lerna diff",
-    "new-version": "lerna version --conventional-commits --yes",
-    "test": "lerna run test --parallel --since"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/**"
-    ]
-  },
   "lint-staged": {
     "*.{ts,json}": [
       "prettier --write",
       "git add"
     ]
-  }
+  },
+  "scripts": {
+    "bootstrap": "lerna clean -y && lerna bootstrap",
+    "build": "lerna run build --parallel --since",
+    "dev": "lerna exec --scope room-app-frontend -- npm start",
+    "diff": "lerna diff",
+    "new-version": "lerna version --conventional-commits --yes",
+    "test": "lerna run test --parallel --since"
+  },
+  "workspaces": [
+    "packages/**"
+  ]
 }
