@@ -55,6 +55,20 @@ export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
     super(scope, id, props)
 
+    try {
+      fs.readdir('../node_modules', (err, items) => {
+        err
+          ? console.error(err)
+          : (() => {
+              console.log(items)
+            })()
+      })
+      const backend = require('../node_modules/@room-app/backend')
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+
     // const { domainName, zoneId } = props
     //
     // const stageName = 'ws'
@@ -97,72 +111,6 @@ export class RoomAppStack extends cdk.Stack {
     //   CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
     //   NODE_ENV: 'production',
     // }
-
-    try {
-      fs.readdir('node_modules', function (err, items) {
-        if (err) {
-          console.error('node_modules', err)
-        }
-        console.log('node_modules', items)
-        // items?.forEach(console.log)
-      })
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    try {
-      fs.readdir('../node_modules', function (err, items) {
-        if (err) {
-          console.error('../node_modules', err)
-        }
-        console.log('../node_modules', items)
-        // items?.forEach(console.log)
-      })
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    try {
-      fs.readdir('../../node_modules', function (err, items) {
-        if (err) {
-          console.error('../../node_modules', err)
-        }
-        console.log('../../node_modules', items)
-        // items?.forEach(console.log)
-      })
-    } catch (e) {
-      console.error(e)
-    }
-
-    try {
-      console.log('require lerna package:', require('@room-app/backend'))
-    } catch (e) {
-      console.error('require lerna package:', e)
-    }
-    try {
-      console.log(
-        'resolve lerna package:',
-        require.resolve('@room-app/backend')
-      )
-    } catch (e) {
-      console.error('resolve lerna package:', e)
-    }
-    try {
-      console.log(
-        'backendCodeAssetPath:',
-        path.join(require('@room-app/backend'), '..')
-      )
-    } catch (e) {
-      console.error('backendCodeAssetPath:', e)
-    }
-    try {
-      console.log(
-        '../node_modules/@room-app/backend:',
-        path.join(require('../node_modules/@room-app/backend'), '..')
-      )
-    } catch (e) {
-      console.error('../node_modules/@room-app/backend:', e)
-    }
     //
     // const backendCodeAssetPath = path.join(require('@room-app/backend'), '..')
     //
