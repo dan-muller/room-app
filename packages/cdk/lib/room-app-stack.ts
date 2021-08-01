@@ -12,6 +12,7 @@ import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as path from 'path'
+import * as fs from 'fs'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -53,6 +54,27 @@ class ConnectionsTable extends dynamodb.Table {
 export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
     super(scope, id, props)
+
+    try {
+      console.log(fs.readdirSync('../node_modules'))
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      console.log(fs.readdirSync('../node_modules/@room-app'))
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      console.log(fs.readdirSync('../../node_modules'))
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      console.log(fs.readdirSync('../../node_modules/@room-app'))
+    } catch (e) {
+      console.error(e)
+    }
 
     // const { domainName, zoneId } = props
     //
