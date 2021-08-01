@@ -29,9 +29,9 @@ jobs:
           npm run bootstrap
           npm run build
 
-      - name: Test 🧪
-        run: |
-          npm run test
+#      - name: Test 🧪
+#        run: |
+#          npm run test
 
       - name: Identify account and region 🔎
         env:
