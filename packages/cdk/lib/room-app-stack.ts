@@ -12,6 +12,7 @@ import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as path from 'path'
+import * as fs from 'fs'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -95,6 +96,30 @@ export class RoomAppStack extends cdk.Stack {
     const environment = {
       CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       NODE_ENV: 'production',
+    }
+
+    try {
+      fs.readdir('../node_modules', function (err, items) {
+        if (err) {
+          console.error('../node_modules', err)
+        }
+        console.log('../node_modules', items)
+        items?.forEach(console.log)
+      })
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+    try {
+      fs.readdir('../../node_modules', function (err, items) {
+        if (err) {
+          console.error('../../node_modules', err)
+        }
+        console.log('../../node_modules', items)
+        items?.forEach(console.log)
+      })
+    } catch (e) {
+      console.error(e)
     }
 
     try {
