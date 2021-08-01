@@ -12,7 +12,6 @@ import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as path from 'path'
-import lambdaCodeFromNodeModules from './lambdaCodeFromNodeModules'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -98,16 +97,34 @@ export class RoomAppStack extends cdk.Stack {
       NODE_ENV: 'production',
     }
 
-    const backendCodeAssetPath = path.join(
-      require.resolve('@room-app/backend'),
-      '..'
-    )
+    try {
+      console.log('require lerna package:', require('@room-app/backend'))
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      console.log(
+        'resolve lerna package:',
+        require.resolve('@room-app/backend')
+      )
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      console.log(
+        'backendCodeAssetPath:',
+        path.join(require('@room-app/backend'), '..')
+      )
+    } catch (e) {
+      console.error(e)
+    }
 
-    console.log('resolve lerna package:', require.resolve('@room-app/backend'))
-    console.log('backendCodeAssetPath:', backendCodeAssetPath)
+    const backendCodeAssetPath = path.join(require('@room-app/backend'), '..')
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset(backendCodeAssetPath),
+      code: lambda.Code.fromAsset(backendCodeAssetPath, {
+        followSymlinks: SymlinkFollowMode.BLOCK_EXTERNAL,
+      }),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
