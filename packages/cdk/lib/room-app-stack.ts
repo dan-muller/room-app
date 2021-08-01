@@ -137,7 +137,7 @@ export class RoomAppStack extends cdk.Stack {
     try {
       console.log('require lerna package:', require('@room-app/backend'))
     } catch (e) {
-      console.error(e)
+      console.error('require lerna package:', e)
     }
     try {
       console.log(
@@ -145,7 +145,7 @@ export class RoomAppStack extends cdk.Stack {
         require.resolve('@room-app/backend')
       )
     } catch (e) {
-      console.error(e)
+      console.error('resolve lerna package:', e)
     }
     try {
       console.log(
@@ -153,7 +153,15 @@ export class RoomAppStack extends cdk.Stack {
         path.join(require('@room-app/backend'), '..')
       )
     } catch (e) {
-      console.error(e)
+      console.error('backendCodeAssetPath:', e)
+    }
+    try {
+      console.log(
+        '../node_modules/@room-app/backend:',
+        path.join(require('../node_modules/@room-app/backend'), '..')
+      )
+    } catch (e) {
+      console.error('../node_modules/@room-app/backend:', e)
     }
     //
     // const backendCodeAssetPath = path.join(require('@room-app/backend'), '..')
