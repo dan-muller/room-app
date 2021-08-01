@@ -14,6 +14,8 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb'
 import * as path from 'path'
 import * as fs from 'fs'
 
+import * as connections from '@room-app/backend/dist/connections'
+
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
   domainName?: string
@@ -72,6 +74,21 @@ export class RoomAppStack extends cdk.Stack {
     }
     try {
       console.log(fs.readdirSync('../../node_modules/@room-app'))
+    } catch (e) {
+      console.error(e)
+    }
+    try {
+      require('@room-app/backend/dist/connections')
+      const backendPath = path.join(
+        require('@room-app/backend/dist/connections'),
+        '..'
+      )
+      console.log('backendPath', backendPath)
+      const backendPathResolve = path.join(
+        require.resolve('@room-app/backend/dist/connections'),
+        '..'
+      )
+      console.log('backendPathResolve', backendPathResolve)
     } catch (e) {
       console.error(e)
     }

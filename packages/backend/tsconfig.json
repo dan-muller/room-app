@@ -12,13 +12,13 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
-    "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "es5",
-    "typeRoots": ["./types", "./node_modules/@types"]
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "outDir": "dist"
   },
   "exclude": ["node_modules", "typings", "build"],
   "include": ["./"]
