@@ -14,7 +14,7 @@
     ]
   },
   "scripts": {
-    "bootstrap": "lerna clean -y && lerna bootstrap",
+    "bootstrap": "lerna bootstrap",
     "build": "lerna run build --parallel --since",
     "dev": "lerna exec --scope room-app-frontend -- npm start",
     "diff": "lerna diff",
