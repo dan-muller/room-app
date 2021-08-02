@@ -51,11 +51,11 @@ class ConnectionsTable extends dynamodb.Table {
   }
 }
 
-const logDir = (dir: string) => {
+const logDir = async (dir: string) => {
   console.log((dir + ' ').padEnd(80, '>'))
   try {
-    fs.readdir(dir, (err, items) => {
-      err ? console.error(dir, err) : console.log(dir, items)
+    await fs.readdir(dir, (err, items) => {
+      err ? console.error(err) : console.log(items)
     })
   } catch (e) {
     console.error(e)
@@ -118,7 +118,7 @@ export class RoomAppStack extends cdk.Stack {
     logDir('node_modules/@room-app/backend/dist')
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset('../backend'),
+      code: lambda.Code.fromAsset('node_modules/@room-app/backend'),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
