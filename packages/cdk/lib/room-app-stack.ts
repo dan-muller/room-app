@@ -51,6 +51,19 @@ class ConnectionsTable extends dynamodb.Table {
   }
 }
 
+const logDir = (dir: string) => {
+  console.log((dir + ' ').padEnd(80, '>'))
+  try {
+    fs.readdir(dir, (err, items) => {
+      err ? console.error(dir, err) : console.log(dir, items)
+    })
+  } catch (e) {
+    console.error(e)
+    throw e
+  }
+  console.log((dir + ' ').padEnd(80, '<'))
+}
+
 export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
     super(scope, id, props)
@@ -98,30 +111,11 @@ export class RoomAppStack extends cdk.Stack {
       NODE_ENV: 'production',
     }
 
-    try {
-      fs.readdir('../', (err, items) => {
-        err
-          ? console.error(err)
-          : (() => {
-              console.log('../', items)
-            })()
-      })
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-    try {
-      fs.readdir('../../', (err, items) => {
-        err
-          ? console.error(err)
-          : (() => {
-              console.log('../../', items)
-            })()
-      })
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
+    logDir('../backend')
+    logDir('../backend/dist')
+    logDir('node_modules/@room-app')
+    logDir('node_modules/@room-app/backend')
+    logDir('node_modules/@room-app/backend/dist')
 
     const lambdaProps = {
       code: lambda.Code.fromAsset('../backend'),
