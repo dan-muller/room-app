@@ -98,6 +98,31 @@ export class RoomAppStack extends cdk.Stack {
       NODE_ENV: 'production',
     }
 
+    try {
+      fs.readdir('../', (err, items) => {
+        err
+          ? console.error(err)
+          : (() => {
+              console.log('../', items)
+            })()
+      })
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+    try {
+      fs.readdir('../../', (err, items) => {
+        err
+          ? console.error(err)
+          : (() => {
+              console.log('../../', items)
+            })()
+      })
+    } catch (e) {
+      console.error(e)
+      throw e
+    }
+
     const lambdaProps = {
       code: lambda.Code.fromAsset('../backend'),
       environment,
