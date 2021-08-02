@@ -116,3 +116,5 @@ cdk.out
 
 **/build
 /packages/frontend/build/
+
+*.lerna_backup
