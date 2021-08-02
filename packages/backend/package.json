@@ -2,22 +2,13 @@
   "name": "@room-app/backend",
   "version": "1.0.0",
   "dependencies": {
-    "aws-sdk": "^2.927.0",
-    "aws-lambda": "^1.0.6"
+    "aws-sdk": "^2.959.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.77",
-    "@types/node": "10.17.27",
-    "ts-node": "^10.0.0",
+    "@types/node": "^14.17.7",
     "typescript": "^4.3.5"
   },
   "scripts": {
     "build": "tsc"
-  },
-  "author": "Douglas Naphas <douglasnaphas@gmail.com>",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/douglasnaphas/room-app/issues"
-  },
-  "homepage": "https://github.com/douglasnaphas/room-app#readme"
+  }
 }
