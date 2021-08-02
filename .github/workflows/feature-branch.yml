@@ -33,15 +33,15 @@ jobs:
 #        run: |
 #          npm run test
 #
-#      - name: Identify account and region 🔎
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-#          AWS_DEFAULT_REGION: "us-east-1"
-#        working-directory: packages/cdk
-#        run: |
-#          aws sts get-caller-identity
-#          echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
+      - name: Identify account and region 🔎
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-1"
+        working-directory: packages/cdk
+        run: |
+          aws sts get-caller-identity
+          echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
       - name: Deploy the webapp stack 🚀
         env:
@@ -51,14 +51,14 @@ jobs:
         working-directory: packages/cdk
         run: |
           npx cdk bootstrap
-#          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
-#          npx cdk deploy --require-approval never ${STACKNAME}
-#
-#      - name: Publish to frontend bucket 🎉
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
-#          AWS_DEFAULT_REGION: "us-east-1"
-#        working-directory: packages/cdk
-#        run: |
-#          bash scripts/deploy-frontend.sh
+          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
+          npx cdk deploy --require-approval never ${STACKNAME}
+
+      - name: Publish to frontend bucket 🎉
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-1"
+        working-directory: packages/cdk
+        run: |
+          bash scripts/deploy-frontend.sh
