@@ -8,10 +8,12 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.77",
     "@types/node": "^16.4.6",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "jest": "^27.0.6"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest --passWithNoTests"
   },
   "author": "Douglas Naphas <douglasnaphas@gmail.com>",
   "license": "Apache-2.0",
