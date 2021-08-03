@@ -116,10 +116,7 @@ export class RoomAppStack extends cdk.Stack {
     }
 
     logDir('../backend')
-    logDir('../backend/dist')
-    logDir('node_modules/@room-app')
     logDir('node_modules/@room-app/backend')
-    logDir('node_modules/@room-app/backend/dist')
 
     const lambdaProps = {
       code: lambda.Code.fromAsset('node_modules/@room-app/backend'),
