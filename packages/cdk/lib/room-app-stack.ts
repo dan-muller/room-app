@@ -52,16 +52,20 @@ class ConnectionsTable extends dynamodb.Table {
 }
 
 const logDir = async (dir: string) => {
-  console.log((dir + ' ').padEnd(80, '>'))
   try {
-    await fs.readdir(dir, (err, items) => {
-      err ? console.error(err) : console.log(items)
-    })
+    await fs.readdir(dir, (err, items) =>
+      err
+        ? console.error(err)
+        : (() => {
+            console.log((dir + ' ').padEnd(80, '>'))
+            console.log(items)
+            console.log((dir + ' ').padEnd(80, '<'))
+          })()
+    )
   } catch (e) {
     console.error(e)
     throw e
   }
-  console.log((dir + ' ').padEnd(80, '<'))
 }
 
 export class RoomAppStack extends cdk.Stack {
