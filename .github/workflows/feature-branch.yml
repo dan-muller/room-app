@@ -23,42 +23,50 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Install
-        run: |
-          npm install
-
-      - name: Install frontend
-        working-directory: frontend
-        run: |
-          npm install
-
       - name: Install backend
         working-directory: backend
         run: |
           npm install
-
-      - name: Build
-        run: |
-          npm run build
-
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          npm run build
 
       - name: Build backend
         working-directory: backend
         run: |
           npm run build
 
-      - name: Test
+      - name: Test backend
+        working-directory: backend
         run: |
-          npm run test -- test
+          npm run test
+
+      - name: Install frontend
+        working-directory: frontend
+        run: |
+          npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm run build
 
       - name: Test frontend
         working-directory: frontend
         run: |
           npm test
+
+      - name: Install CDK
+        working-directory: cdk
+        run: |
+          npm install
+
+      - name: Build CDK
+        working-directory: cdk
+        run: |
+          npm run build
+
+      - name: Test CDK
+        working-directory: cdk
+        run: |
+          npm run test -- test
 
       - name: Identify dev account and region
         env:

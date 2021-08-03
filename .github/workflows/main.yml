@@ -23,31 +23,28 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Install
+      - name: Install backend
+        working-directory: backend
         run: |
           npm install
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm run build
+
+      - name: Test backend
+        working-directory: backend
+        run: |
+          npm run test
 
       - name: Install frontend
         working-directory: frontend
         run: |
           npm install
 
-      - name: Install backend
-        working-directory: backend
-        run: |
-          npm install
-
-      - name: Build
-        run: |
-          npm run build
-
       - name: Build frontend
         working-directory: frontend
-        run: |
-          npm run build
-
-      - name: Build backend
-        working-directory: backend
         run: |
           npm run build
 
@@ -56,11 +53,23 @@ jobs:
         run: |
           npm test
 
-      - name: Test
+      - name: Install CDK
+        working-directory: cdk
+        run: |
+          npm install
+
+      - name: Build CDK
+        working-directory: cdk
+        run: |
+          npm run build
+
+      - name: Test CDK
+        working-directory: cdk
         run: |
           npm run test -- test
 
       - name: Identify test account and region
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -70,6 +79,7 @@ jobs:
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
       - name: Deploy the webapp stack to the test account
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -80,6 +90,7 @@ jobs:
           npx cdk deploy --require-approval never ${STACKNAME}
 
       - name: Deploy to the frontend bucket (test account)
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -88,6 +99,7 @@ jobs:
           bash scripts/deploy-frontend.sh
 
       - name: Identify prod account and region
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -97,6 +109,7 @@ jobs:
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
       - name: Deploy the webapp stack to the prod account
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -107,6 +120,7 @@ jobs:
           npx cdk deploy --require-approval never ${STACKNAME}
 
       - name: Deploy to the frontend bucket (prod account)
+        working-directory: cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
