@@ -1,6 +1,6 @@
 {
   "bin": {
-    "room-app": "bin/room-app.js"
+    "room-app": "cdk/bin/room-app.js"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.108.1",
@@ -39,7 +39,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": ""
   },
   "version": "0.1.0"
 }
