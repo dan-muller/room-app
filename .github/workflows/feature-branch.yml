@@ -43,10 +43,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
         run: |
-          exit 0
-#          npx cdk bootstrap
-#          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
-#          npx cdk deploy --require-approval never ${STACKNAME}
+          npx cdk bootstrap
+          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
+          npx cdk deploy --require-approval never ${STACKNAME}
+#          exit 0
 
       - name: Publish to frontend bucket 🎉
         env:
@@ -54,5 +54,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
         run: |
-          exit 0
-#          bash scripts/deploy-frontend.sh
+          bash scripts/deploy-frontend.sh
+#          exit 0
