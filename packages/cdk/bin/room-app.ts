@@ -45,7 +45,7 @@ const stackname = require("@cdk-turnkey/stackname");
   AWS.config.update({ region: process.env.AWS_DEFAULT_REGION });
   const ssm = new AWS.SSM();
   let ssmResponse: any;
-  ssmResponse = await new Promise((resolve, reject) => {
+  ssmResponse = await new Promise((resolve) => {
     ssm.getParameters(ssmParams, (err: any, data: any) => {
       resolve({ err, data });
     });
@@ -95,7 +95,7 @@ const stackname = require("@cdk-turnkey/stackname");
     const getEmailIdentityParams = {
       EmailIdentity: fromAddress,
     };
-    sesv2Response = await new Promise((resolve, reject) => {
+    sesv2Response = await new Promise((resolve) => {
       sesv2.getEmailIdentity(getEmailIdentityParams, (err: any, data: any) => {
         resolve({ err, data });
       });

@@ -21,7 +21,7 @@ const useParams = () => {
       .replace('?', '')
       .split('&')
       .map((param) => param.split('='))
-      .filter(([key, value]) => key)
+      .filter(([key]) => key)
   )
   console.debug('Params:', params)
   return params

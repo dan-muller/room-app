@@ -51,6 +51,7 @@ const useWebSocket = (url: string): WebSocket | undefined => {
   } catch (e) {
     console.error(e)
   }
+  return undefined
 }
 
 const useWebSocketUrl = (name: string, roomCode: string) => {

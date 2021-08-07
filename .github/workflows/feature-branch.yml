@@ -20,55 +20,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
 
-      - name: Install backend
-        working-directory: backend
+      - name: Install and Build 🔧
         run: |
-          npm install
+          yarn install
+          yarn workspaces run build
 
-      - name: Build backend
-        working-directory: backend
-        run: |
-          npm run build
-
-      - name: Test backend
-        working-directory: backend
-        run: |
-          npm run test
-
-      - name: Install frontend
-        working-directory: frontend
-        run: |
-          npm install
-
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          npm run build
-
-      - name: Test frontend
-        working-directory: frontend
-        run: |
-          npm test
-
-      - name: Install CDK
-        working-directory: cdk
-        run: |
-          npm install
-
-      - name: Build CDK
-        working-directory: cdk
-        run: |
-          npm run build
-
-      - name: Test CDK
-        working-directory: cdk
-        run: |
-          npm run test -- test
-
-      - name: Identify dev account and region
+      - name: Identify account and region 🔎
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
@@ -77,20 +37,22 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack to the dev account
+      - name: Deploy the webapp stack 🚀
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
         run: |
-          npx cdk bootstrap
-          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
-          npx cdk deploy --require-approval never ${STACKNAME}
+#          npx cdk bootstrap
+#          STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
+#          npx cdk deploy --require-approval never ${STACKNAME}
+          exit 0
 
-      - name: Deploy to the frontend bucket (dev account)
+      - name: Publish to frontend bucket 🎉
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "us-east-1"
         run: |
-          bash scripts/deploy-frontend.sh
+#          bash scripts/deploy-frontend.sh
+          exit 0
