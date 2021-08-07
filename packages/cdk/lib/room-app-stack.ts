@@ -94,7 +94,7 @@ export class RoomAppStack extends cdk.Stack {
     };
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset("../backend"),
+      code: lambda.Code.fromAsset("../backend/build"),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
