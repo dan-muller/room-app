@@ -47,7 +47,6 @@ jobs:
           npx cdk bootstrap
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
-#          exit 0
 
       - name: Publish to frontend bucket 🎉
         env:
@@ -57,4 +56,3 @@ jobs:
         working-directory: packages/cdk
         run: |
           bash scripts/deploy-frontend.sh
-#          exit 0
