@@ -3,8 +3,7 @@ name: CI-feature-branch
 on:
   push:
     branches-ignore: 
-      - "!main"
-      
+      - "main"
   workflow_dispatch:
   
 jobs:
