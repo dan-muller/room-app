@@ -2,8 +2,6 @@ name: CI-feature-branch
 
 on:
   push:
-    branches:
-      - "*"
     branches-ignore: 
       - "!main"
       
