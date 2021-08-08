@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./build",
     "noEmit": false,
     "typeRoots": ["node_modules/@types"]
   },
-  "exclude": ["node_modules"],
+  "exclude": ["build","node_modules"],
   "extends": "../../tsconfig.json",
   "include": ["./"]
 }
