@@ -29,7 +29,7 @@ jobs:
           yarn workspaces run build
 
       - name: Identify account and region (Test Account) 🔎
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -39,7 +39,7 @@ jobs:
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
       - name: Deploy the webapp stack (Test Account) 🚀
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -50,7 +50,7 @@ jobs:
           npx cdk deploy --require-approval never ${STACKNAME}
 
       - name: Publish to frontend bucket (Test Account) 🎉
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -59,7 +59,7 @@ jobs:
           bash scripts/deploy-frontend.sh
 
       - name: Identify account and region (Prod Account) 🔎
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -69,7 +69,7 @@ jobs:
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
       - name: Deploy the webapp stack (Prod Account) 🚀
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -80,7 +80,7 @@ jobs:
           npx cdk deploy --require-approval never ${STACKNAME}
 
       - name: Publish to frontend bucket (Prod Account) 🎉
-        working-directory: cdk
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
