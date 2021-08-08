@@ -104,6 +104,7 @@ dist
 
 *.js
 *.d.ts
+*.ts.map
 
 # CDK asset staging directory
 .cdk.staging
@@ -119,3 +120,5 @@ cdk.out
 !jest.config.js
 
 .idea
+
+build/

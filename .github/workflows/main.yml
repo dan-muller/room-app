@@ -20,47 +20,16 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
 
-      - name: Install
+      - name: Install and Build 🔧
         run: |
-          npm install
+          yarn install
+          yarn workspaces run build
 
-      - name: Install frontend
-        working-directory: frontend
-        run: |
-          npm install
-
-      - name: Install backend
-        working-directory: backend
-        run: |
-          npm install
-
-      - name: Build
-        run: |
-          npm run build
-
-      - name: Build frontend
-        working-directory: frontend
-        run: |
-          npm run build
-
-      - name: Build backend
-        working-directory: backend
-        run: |
-          npm run build
-
-      - name: Test frontend
-        working-directory: frontend
-        run: |
-          npm test
-
-      - name: Test
-        run: |
-          npm run test -- test
-
-      - name: Identify test account and region
+      - name: Identify account and region (Test Account) 🔎
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -69,7 +38,8 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack to the test account
+      - name: Deploy the webapp stack (Test Account) 🚀
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -79,7 +49,8 @@ jobs:
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
 
-      - name: Deploy to the frontend bucket (test account)
+      - name: Publish to frontend bucket (Test Account) 🎉
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
@@ -87,7 +58,8 @@ jobs:
         run: |
           bash scripts/deploy-frontend.sh
 
-      - name: Identify prod account and region
+      - name: Identify account and region (Prod Account) 🔎
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -96,7 +68,8 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack to the prod account
+      - name: Deploy the webapp stack (Prod Account) 🚀
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
@@ -106,7 +79,8 @@ jobs:
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
 
-      - name: Deploy to the frontend bucket (prod account)
+      - name: Publish to frontend bucket (Prod Account) 🎉
+        working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}

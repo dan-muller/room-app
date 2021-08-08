@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import { Button } from './Button'
 import { Input } from './Input'
 
-const Welcome = () => {
-  const [roomCode, setRoomCode] = useState<string>()
-  const [name, setName] = useState<string>()
+const Welcome: React.FC = () => {
+  const [roomCode, setRoomCode] = React.useState<string>()
+  const [name, setName] = React.useState<string>()
   return (
     <>
       <Input

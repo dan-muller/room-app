@@ -10,5 +10,5 @@ BUCKET=$(aws cloudformation describe-stacks \
 echo "BUCKET:"
 echo "${BUCKET}"
 
-source scripts/deploy-to-frontend-bucket.sh
-deploy-to-bucket ${BUCKET}
+source scripts/deploy-to-bucket.sh
+deploy-to-bucket "${BUCKET}" "../frontend"
