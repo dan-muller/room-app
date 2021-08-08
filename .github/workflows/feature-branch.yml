@@ -28,7 +28,7 @@ jobs:
           yarn install
           yarn workspaces run build
 
-      - name: Identify account and region 🔎
+      - name: Identify account and region (Dev Account) 🔎
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
@@ -37,7 +37,7 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack 🚀
+      - name: Deploy the webapp stack (Dev Account) 🚀
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
@@ -48,7 +48,7 @@ jobs:
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
 
-      - name: Publish to frontend bucket 🎉
+      - name: Publish to frontend bucket (Dev Account) 🎉
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
