@@ -8,6 +8,7 @@ on:
   
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -31,8 +32,26 @@ jobs:
         run: |
           yarn install
           yarn workspaces run build
-
-      - name: Identify account and region (Dev Account) 🔎
+      
+      - name: Upload Artifact 📂
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifact
+          path: ./
+      
+  deploy-to-dev:
+    name: Deploy to Dev Acount
+    runs-on: ubuntu-latest
+    needs: 
+      - build
+    
+    steps:
+      - name: Download Artifact 📂
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifact
+    
+      - name: Identify account and region 🔎
         working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
@@ -42,7 +61,7 @@ jobs:
           aws sts get-caller-identity
           echo ${AWS_DEFAULT_REGION} | sed 's/-/+/g'
 
-      - name: Deploy the webapp stack (Dev Account) 🚀
+      - name: Deploy the webapp stack 🚀
         working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
@@ -53,7 +72,7 @@ jobs:
           STACKNAME=$(npx @cdk-turnkey/stackname@1.2.0 --suffix webapp)
           npx cdk deploy --require-approval never ${STACKNAME}
 
-      - name: Publish to frontend bucket (Dev Account) 🎉
+      - name: Publish to frontend bucket 🎉
         working-directory: packages/cdk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
