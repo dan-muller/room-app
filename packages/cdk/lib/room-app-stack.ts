@@ -99,16 +99,17 @@ export class RoomAppStack extends cdk.Stack {
       ...lambdaProps,
       handler: "handlers.Connect",
     });
-    connectionsTable.grantFullAccess(connectFn);
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       ...lambdaProps,
       handler: "handlers.Disconnect",
     });
-    connectionsTable.grantFullAccess(disconnectFn);
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       ...lambdaProps,
       handler: "handlers.Default",
     });
+
+    connectionsTable.grantFullAccess(connectFn);
+    connectionsTable.grantFullAccess(disconnectFn);
     connectionsTable.grantFullAccess(defaultFn);
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
@@ -128,7 +129,6 @@ export class RoomAppStack extends cdk.Stack {
         }),
       },
     });
-
     const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
       webSocketApi,
       stageName,
