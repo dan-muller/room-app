@@ -88,7 +88,7 @@ export class RoomAppStack extends cdk.Stack {
     };
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset("../connections"),
+      code: lambda.Code.fromAsset("../connections", { exclude: ["*.ts", "*.ts.map"]}),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
