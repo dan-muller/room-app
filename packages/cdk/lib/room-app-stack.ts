@@ -10,30 +10,6 @@ import * as origins from "@aws-cdk/aws-cloudfront-origins";
 import * as route53 from "@aws-cdk/aws-route53";
 import * as s3 from "@aws-cdk/aws-s3";
 
-namespace Connections {
-  const TableName: string = "Connections";
-  const TableProps: dynamodb.TableProps = {
-    partitionKey: {
-      name: "PK",
-      type: dynamodb.AttributeType.STRING,
-    },
-    sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
-    billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-  };
-
-  export class Table extends dynamodb.Table {
-    constructor(parent: cdk.Construct) {
-      super(parent, TableName, TableProps);
-      this.addGlobalSecondaryIndex({
-        partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
-        indexName: "ConnectionIdIndex",
-        projectionType: dynamodb.ProjectionType.KEYS_ONLY,
-      });
-    }
-  }
-}
-
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
   domainName?: string;
@@ -54,7 +30,25 @@ export class RoomAppStack extends cdk.Stack {
 
     const stageName = "ws";
 
-    const connectionsTable = new Connections.Table(this);
+    const connectionsTable = new dynamodb.Table(this, "Connections", {
+      partitionKey: {
+        name: "PK",
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+    connectionsTable.addGlobalSecondaryIndex({
+      partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
+      indexName: "ConnectionIdIndex",
+      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+    });
+    connectionsTable.addGlobalSecondaryIndex({
+      partitionKey: { name: "PlayerId", type: dynamodb.AttributeType.STRING },
+      indexName: "PlayerIdIndex",
+      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+    });
 
     const frontendBucket = new s3.Bucket(this, "FrontendBucket");
 
@@ -94,7 +88,7 @@ export class RoomAppStack extends cdk.Stack {
     };
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset("../backend"),
+      code: lambda.Code.fromAsset("../connections"),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -103,16 +97,19 @@ export class RoomAppStack extends cdk.Stack {
 
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       ...lambdaProps,
-      handler: "connections.connectHandler",
+      handler: "handlers.connect",
     });
+    connectionsTable.grantFullAccess(connectFn);
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       ...lambdaProps,
-      handler: "connections.disconnectHandler",
+      handler: "handlers.disconnect",
     });
+    connectionsTable.grantFullAccess(disconnectFn);
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       ...lambdaProps,
-      handler: "connections.defaultHandler",
+      handler: "handlers.default",
     });
+    connectionsTable.grantFullAccess(defaultFn);
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
       connectRouteOptions: {
@@ -190,10 +187,6 @@ export class RoomAppStack extends cdk.Stack {
         ),
       }
     );
-
-    connectionsTable.grantFullAccess(connectFn);
-    connectionsTable.grantFullAccess(disconnectFn);
-    connectionsTable.grantFullAccess(defaultFn);
 
     new cdk.CfnOutput(this, "FrontendBucketName", {
       value: frontendBucket.bucketName,
