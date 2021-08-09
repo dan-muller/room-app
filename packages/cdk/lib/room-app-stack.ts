@@ -88,7 +88,7 @@ export class RoomAppStack extends cdk.Stack {
     };
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset("../connections/handlers"),
+      code: lambda.Code.fromAsset("../connections"),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -97,17 +97,17 @@ export class RoomAppStack extends cdk.Stack {
 
     const connectFn = new lambda.Function(this, "ConnectionHandler", {
       ...lambdaProps,
-      handler: "connect",
+      handler: "handlers.Connect",
     });
     connectionsTable.grantFullAccess(connectFn);
     const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
       ...lambdaProps,
-      handler: "disconnect",
+      handler: "handlers.Disconnect",
     });
     connectionsTable.grantFullAccess(disconnectFn);
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       ...lambdaProps,
-      handler: "default",
+      handler: "handlers.Default",
     });
     connectionsTable.grantFullAccess(defaultFn);
 
