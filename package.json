@@ -6,7 +6,7 @@
     "prettier": "^2.3.2"
   },
   "scripts": {
-    "build": "yarn workspaces run build"
+    "build": "yarn workspaces foreach -ptv run build"
   },
   "workspaces": {
     "packages": [
