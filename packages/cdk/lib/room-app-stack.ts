@@ -134,7 +134,7 @@ export class RoomAppStack extends cdk.Stack {
         }),
       },
     });
-    new cdk.CfnOutput(this, "webSocketApiEndpoint", {
+    new cdk.CfnOutput(this, "WebSocketApiEndpoint", {
       value: webSocketApi.apiEndpoint,
     });
     const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
@@ -173,11 +173,11 @@ export class RoomAppStack extends cdk.Stack {
       }
     );
 
-    const websocketApiEndpoint = `https://${webSocketApiDomainName}/${webSocketStage.stageName}/`;
-    new cdk.CfnOutput(this, "websocketApiEndpoint", { value: websocketApiEndpoint });
-    connectFn.addEnvironment("ENDPOINT", websocketApiEndpoint);
-    disconnectFn.addEnvironment("ENDPOINT", websocketApiEndpoint);
-    defaultFn.addEnvironment("ENDPOINT", websocketApiEndpoint);
+    const websocketStageEndpoint = `https://${webSocketApiDomainName}/${webSocketStage.stageName}/`;
+    new cdk.CfnOutput(this, "WebsocketStageEndpoint", { value: websocketStageEndpoint });
+    connectFn.addEnvironment("ENDPOINT", websocketStageEndpoint);
+    disconnectFn.addEnvironment("ENDPOINT", websocketStageEndpoint);
+    defaultFn.addEnvironment("ENDPOINT", websocketStageEndpoint);
 
     const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`;
     new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
@@ -213,11 +213,11 @@ export class RoomAppStack extends cdk.Stack {
     const graphQlApi = new apigw.LambdaRestApi(this, 'GraphQlApi', {
       handler: graphqlFn,
     })
-    new cdk.CfnOutput(this, "graphQlApiEndpoint", {
+    new cdk.CfnOutput(this, "GraphQlApiEndpoint", {
       value: graphQlApi.url,
     });
     const graphQlApiDomainName = `${graphQlApi.restApiId}.execute-api.${this.region}.${this.urlSuffix}`
-    new cdk.CfnOutput(this, "graphQlApiDomainName", {
+    new cdk.CfnOutput(this, "GraphQlApiDomainName", {
       value: graphQlApiDomainName,
     });
     distro.addBehavior(
