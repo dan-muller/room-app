@@ -30,7 +30,8 @@ jobs:
       - name: Install and Build 🔧
         run: |
           yarn install
-          yarn workspaces run build
+          yarn run bootstrap
+          yarn run build
 
       - name: Identify account and region (Dev Account) 🔎
         working-directory: packages/cdk
