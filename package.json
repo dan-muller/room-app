@@ -3,11 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "devDependencies": {
-    "lerna": "^4.0.0",
     "prettier": "^2.3.2"
   },
   "scripts": {
-    "bootstrap": "lerna clean -y && lerna bootstrap",
-    "build": "lerna run build --parallel --since"
+    "build": "yarn workspaces -v run build"
+  },
+  "workspaces": {
+    "packages": [
+      "./packages/*"
+    ],
+    "nohoist": [
+      "./packages/*"
+    ]
   }
 }
