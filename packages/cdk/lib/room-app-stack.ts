@@ -219,7 +219,7 @@ export class RoomAppStack extends cdk.Stack {
       value: graphQlApiDomainName,
     });
     distro.addBehavior(
-      `/graphql/*`,
+      `api/graphql/*`,
       new origins.HttpOrigin(graphQlApiDomainName, {
         protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
       })
