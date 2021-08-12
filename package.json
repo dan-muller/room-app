@@ -6,10 +6,13 @@
     "prettier": "^2.3.2"
   },
   "scripts": {
-    "build": "yarn workspaces run build"
+    "build": "yarn workspaces -v run build"
   },
   "workspaces": {
     "packages": [
+      "./packages/*"
+    ],
+    "nohoist": [
       "./packages/*"
     ]
   }

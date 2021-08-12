@@ -201,9 +201,7 @@ export class RoomAppStack extends cdk.Stack {
     );
 
     const graphqlFn = new lambda.Function(this, 'GraphQLHandler', {
-      code: lambda.Code.fromAsset('../graphql', {
-        exclude: ['*.ts', '*.ts.map'],
-      }),
+      code: lambda.Code.fromAsset('../graphql'),
       environment,
       handler: 'lambda.handler',
       memorySize: 3000,
