@@ -10,6 +10,7 @@ import * as lambda from '@aws-cdk/aws-lambda'
 import * as origins from '@aws-cdk/aws-cloudfront-origins'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
+import { WebpackFunction } from 'aws-cdk-webpack-lambda-function'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string
@@ -200,14 +201,23 @@ export class RoomAppStack extends cdk.Stack {
       })
     );
 
-    const graphqlFn = new lambda.Function(this, 'GraphQLHandler', {
-      code: lambda.Code.fromAsset('../graphql'),
+    // const graphqlFn = new lambda.Function(this, 'GraphQLHandler', {
+    //   code: lambda.Code.fromAsset('../graphql'),
+    //   environment,
+    //   handler: 'lambda.handler',
+    //   memorySize: 3000,
+    //   runtime: lambda.Runtime.NODEJS_14_X,
+    //   timeout: cdk.Duration.seconds(20),
+    // })
+    const graphqlFn = new WebpackFunction(this, "GraphQLHandler", {
+      entry: "../graphql/lambda.ts",
+      config: "./webpack.config.js",
+      handler: "handler",
       environment,
-      handler: 'lambda.handler',
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
-    })
+    });
     const graphQlApi = new apigw.LambdaRestApi(this, 'GraphQlApi', {
       handler: graphqlFn,
     })
