@@ -6,5 +6,5 @@
   },
   "extends": "../../tsconfig.json",
   "exclude": ["node_modules"],
-  "include": ["./"]
+  "include": ["./lambda.ts", "./src"]
 }
