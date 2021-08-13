@@ -13,9 +13,7 @@
       "./packages/*"
     ],
     "nohoist": [
-      "graphql/@vendia/serverless-express",
-      "graphql/aws-lambda",
-      "graphql/express"
+      "graphql/**"
     ]
   }
 }
