@@ -1,14 +1,12 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
+    "noEmit": true,
+    "resolveJsonModule": true,
     "typeRoots": ["node_modules/@types"],
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "forceConsistentCasingInFileNames": true
   },
   "extends": "../../tsconfig.json",
-  "exclude": ["build","node_modules"],
-  "include": ["./src"]
+  "include": ["src"]
 }
