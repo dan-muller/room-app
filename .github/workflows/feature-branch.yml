@@ -2,10 +2,10 @@ name: CI-feature-branch
 
 on:
   push:
-    branches-ignore: 
+    branches-ignore:
       - "main"
   workflow_dispatch:
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,6 +31,10 @@ jobs:
         run: |
           yarn install
           yarn workspaces run build
+
+      - name: Run Tests 🧪
+        run: |
+          yarn workspaces run test
 
       - name: Identify account and region (Dev Account) 🔎
         working-directory: packages/cdk
