@@ -24,9 +24,9 @@ const useLocalStorage = <T = any>(
       return value
     }
     if (typeof initialValue === 'function') {
-      return set(key, (initialValue as Function)())
+      return set<T>(key, (initialValue as Function)())
     }
-    return set(key, initialValue)
+    return set<T>(key, initialValue)
   })
   return [
     current,
@@ -40,7 +40,7 @@ const useLocalStorage = <T = any>(
           value = dispatch
         }
         setValue(value)
-        set(key, value)
+        set<T>(key, value)
       } catch (error) {
         console.log(error)
       }
