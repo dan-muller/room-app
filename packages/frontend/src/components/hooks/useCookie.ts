@@ -29,9 +29,9 @@ const useCookie = <T = any>(
       return value
     }
     if (typeof initialValue === 'function') {
-      return set(key, (initialValue as Function)(), initialOptions)
+      return set<T>(key, (initialValue as Function)(), initialOptions)
     }
-    return set(key, initialValue)
+    return set<T>(key, initialValue)
   })
   return [
     current,
@@ -45,7 +45,7 @@ const useCookie = <T = any>(
           value = dispatch
         }
         setValue(value)
-        set(key, value, options)
+        set<T>(key, value, options)
       } catch (error) {
         console.log(error)
       }
