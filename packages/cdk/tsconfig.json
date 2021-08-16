@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "moduleResolution": "classic",
     "typeRoots": ["node_modules/@types"]
   },
   "extends": "../../tsconfig.json",
