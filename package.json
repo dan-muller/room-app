@@ -6,11 +6,16 @@
     "prettier": "^2.3.2"
   },
   "scripts": {
-    "build": "yarn workspaces run build"
+    "workspace:build": "yarn workspaces run build",
+    "workspace:install": "yarn install"
   },
   "workspaces": {
     "packages": [
       "./packages/*"
+    ],
+    "nohoist": [
+      "**jest**",
+      "jest-watch-typeahead"
     ]
   }
 }

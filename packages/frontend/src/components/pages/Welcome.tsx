@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { Button } from './Button'
-import { Input } from './Input'
+import { Button } from 'components/atoms/Button'
+import { Input } from 'components/atoms/Input'
 
 const Welcome: React.FC = () => {
   const [roomCode, setRoomCode] = React.useState<string>()

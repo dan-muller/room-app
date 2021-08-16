@@ -1,8 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Lobby = React.lazy(() => import('components/Lobby'))
-const Welcome = React.lazy(() => import('components/Welcome'))
+import { Provider as ContextProvider } from 'components/Context'
+
+const Lobby = React.lazy(() => import('components/pages/Lobby'))
+const Welcome = React.lazy(() => import('components/pages/Welcome'))
 
 const StyledApp = styled.div`
   background-color: #282c34;
@@ -15,7 +17,7 @@ const StyledApp = styled.div`
   color: white;
 `
 
-const useParams = () => {
+const useParams = (): Record<string, string | undefined> => {
   const params = Object.fromEntries(
     window.location.search
       .replace('?', '')
@@ -29,12 +31,15 @@ const useParams = () => {
 
 const App = () => {
   const { RoomCode, Name } = useParams()
+
   return (
     <StyledApp>
-      <React.Suspense fallback={<>Loading...</>}>
-        {(!RoomCode || !Name) && <Welcome />}
-        {RoomCode && Name && <Lobby roomCode={RoomCode} name={Name} />}
-      </React.Suspense>
+      <ContextProvider>
+        <React.Suspense fallback={<>Loading...</>}>
+          {(!RoomCode || !Name) && <Welcome />}
+          {RoomCode && Name && <Lobby roomCode={RoomCode} name={Name} />}
+        </React.Suspense>
+      </ContextProvider>
     </StyledApp>
   )
 }
