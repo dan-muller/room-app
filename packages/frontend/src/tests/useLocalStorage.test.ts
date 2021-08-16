@@ -1,18 +1,17 @@
-import Cookies from 'js-cookie'
 import faker from 'faker'
 import { act } from 'react-dom/test-utils'
 import { renderHook } from '@testing-library/react-hooks'
 
-import useCookie from './useCookie'
+import useLocalStorage from 'components/hooks/useLocalStorage'
 
-describe('useCookie', () => {
+describe('useLocalStorage', () => {
   beforeEach(function () {
     let store: { [key: string]: string } = {}
     jest
-      .spyOn(Object.getPrototypeOf(Cookies), 'get')
+      .spyOn(Object.getPrototypeOf(localStorage), 'getItem')
       .mockImplementation((key) => store[key as string])
     jest
-      .spyOn(Object.getPrototypeOf(Cookies), 'set')
+      .spyOn(Object.getPrototypeOf(localStorage), 'setItem')
       .mockImplementation(
         (key, value) => (store[key as string] = JSON.stringify(value))
       )
@@ -22,7 +21,7 @@ describe('useCookie', () => {
     const key = faker.lorem.word()
     const initialValue = faker.lorem.word()
 
-    const { result } = renderHook(() => useCookie(key, initialValue))
+    const { result } = renderHook(() => useLocalStorage(key, initialValue))
     const [value] = result.current
 
     expect(value).toBe(initialValue)
@@ -33,7 +32,7 @@ describe('useCookie', () => {
     const initialValue = faker.lorem.word()
     const initialValueFn = jest.fn(() => initialValue)
 
-    renderHook(() => useCookie(key, initialValueFn))
+    renderHook(() => useLocalStorage(key, initialValueFn))
 
     expect(initialValueFn).toHaveBeenCalledTimes(1)
     expect(initialValueFn).lastReturnedWith(initialValue)
@@ -44,7 +43,7 @@ describe('useCookie', () => {
     const initialValue = faker.lorem.word()
     const nextValue = faker.lorem.word()
 
-    const { result } = renderHook(() => useCookie(key, initialValue))
+    const { result } = renderHook(() => useLocalStorage(key, initialValue))
     const [_, setValue] = result.current
     act(() => setValue(nextValue))
 
@@ -58,7 +57,7 @@ describe('useCookie', () => {
     const nextValue = faker.lorem.word()
     const nextValueFn = jest.fn(() => nextValue)
 
-    const { result } = renderHook(() => useCookie(key, initialValue))
+    const { result } = renderHook(() => useLocalStorage(key, initialValue))
     const [_, setValue] = result.current
     act(() => setValue(nextValueFn))
 
@@ -83,7 +82,7 @@ describe('useCookie', () => {
     const initialValue: T = getT()
     const nextValue: T = getT()
 
-    const { result } = renderHook(() => useCookie(key, initialValue))
+    const { result } = renderHook(() => useLocalStorage(key, initialValue))
     const [_, setValue] = result.current
     act(() => setValue(nextValue))
 

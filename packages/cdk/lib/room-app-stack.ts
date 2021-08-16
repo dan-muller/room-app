@@ -187,8 +187,12 @@ export class RoomAppStack extends cdk.Stack {
               'Sec-WebSocket-Version'
             ),
             queryStringBehavior:
-              cloudfront.OriginRequestQueryStringBehavior.all(),
-            cookieBehavior: cloudfront.OriginRequestCookieBehavior.all(),
+              cloudfront.OriginRequestQueryStringBehavior.allowList(
+                'Name',
+                'RoomCode'
+              ),
+            cookieBehavior:
+              cloudfront.OriginRequestCookieBehavior.allowList('UserId'),
           }
         ),
       }

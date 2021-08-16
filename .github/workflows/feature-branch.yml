@@ -2,10 +2,10 @@ name: CI-feature-branch
 
 on:
   push:
-    branches-ignore: 
+    branches-ignore:
       - "main"
   workflow_dispatch:
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
