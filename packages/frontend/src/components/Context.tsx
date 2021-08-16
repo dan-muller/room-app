@@ -2,20 +2,27 @@ import React from 'react'
 import { v4 as uuid } from 'uuid'
 
 import useCookie from 'components/hooks/useCookie'
-import useLocalStorage from 'components/hooks/useLocalStorage'
+import useParams from './hooks/useParams'
 
-type Context = { playerId: string }
+type Context = {
+  name?: string
+  roomCode?: string
+  userId: string
+}
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentionally naming the variable the same as the type
-const Context = React.createContext<Context>({ playerId: 'xxxxx' })
+const Context = React.createContext<Context>({
+  userId: 'xxxxx',
+})
 
 export const Provider: React.FC = ({ children }) => {
-  const [playerIdStored] = useLocalStorage('playerId', uuid)
-  const [playerIdCookie] = useCookie('playerId', uuid)
-  console.log({ playerIdStored, playerIdCookie })
+  const { RoomCode, Name } = useParams()
+  const [userId] = useCookie('userId', uuid)
   return (
-    <Context.Provider value={{ playerId: playerIdCookie }}>
+    <Context.Provider value={{ userId, roomCode: RoomCode, name: Name }}>
       {children}
     </Context.Provider>
   )
 }
-export const usePlayerId = () => React.useContext(Context).playerId
+export const useRoomCode = () => React.useContext(Context).roomCode
+export const useUserId = () => React.useContext(Context).userId
+export const useUserName = () => React.useContext(Context).name

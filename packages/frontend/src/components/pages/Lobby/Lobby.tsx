@@ -78,11 +78,11 @@ function useSendMessageFn(name: string, roomCode: string) {
   }
 }
 
-const LobbyContainer: React.FC<{ name: string; roomCode: string }> = ({
-  name,
+const LobbyContainer: React.FC<{ userName: string; roomCode: string }> = ({
+  userName,
   roomCode,
 }) => {
-  const sendMessage = useSendMessageFn(name, roomCode)
+  const sendMessage = useSendMessageFn(userName, roomCode)
   return <LobbyComponent sendMessage={sendMessage} />
 }
 

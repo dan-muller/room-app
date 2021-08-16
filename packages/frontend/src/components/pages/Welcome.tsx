@@ -3,9 +3,12 @@ import React from 'react'
 import { Button } from 'components/atoms/Button'
 import { Input } from 'components/atoms/Input'
 
-const Welcome: React.FC = () => {
-  const [roomCode, setRoomCode] = React.useState<string>()
-  const [name, setName] = React.useState<string>()
+const Welcome: React.FC<{ userName?: string; roomCode?: string }> = ({
+  roomCode: roomCodeInitial = '',
+  userName: userNameInitial = '',
+}) => {
+  const [roomCode, setRoomCode] = React.useState<string>(roomCodeInitial)
+  const [userName, setUserName] = React.useState<string>(userNameInitial)
   return (
     <>
       <Input
@@ -14,15 +17,17 @@ const Welcome: React.FC = () => {
         value={roomCode}
       />
       <Input
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => setUserName(e.target.value)}
         placeholder="Enter name"
-        value={name}
+        value={userName}
       />
       <Button
-        disabled={!roomCode || !name}
+        disabled={!roomCode || !userName}
         onClick={() => {
-          if (name && roomCode) {
-            document.location.search = `?RoomCode=${roomCode}&Name=${name}`
+          if (userName && roomCode) {
+            const RoomCode = escape(roomCode)
+            const Name = escape(userName)
+            document.location.search = `?RoomCode=${RoomCode}&Name=${Name}`
           }
         }}
       >
