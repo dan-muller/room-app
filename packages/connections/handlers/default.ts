@@ -7,12 +7,18 @@ const defaultHandler: Handler = async (event) => {
   console.log('Default Event:', event)
   try {
     const ConnectionId = event.requestContext.connectionId
-    const { RoomCode, Name } = await DynamoClient.getRoomInfo(ConnectionId)
-    const Event = { ConnectionId, Message: event.body, Name, RoomCode }
+    const RoomInfo = await DynamoClient.getRoomInfo(ConnectionId)
 
-    if (RoomCode) {
+    if (RoomInfo) {
+      const { RoomCode, UserId, UserName } = RoomInfo
+      const Event = {
+        ConnectionId,
+        Message: event.body,
+        RoomCode,
+        UserId,
+        UserName,
+      }
       const Connections = publishToConnections(RoomCode, ConnectionId, Event)
-
       return { statusCode: 200, body: JSON.stringify({ Connections }) }
     }
     return { statusCode: 500, body: 'RoomCode for ConnectionId not found.' }
