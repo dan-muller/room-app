@@ -7,9 +7,10 @@ const disconnectHandler: Handler = async (event) => {
   console.log('Disconnect Event:', event)
   try {
     const ConnectionId = event.requestContext.connectionId
-    const { RoomCode } = await DynamoClient.getRoomInfo(ConnectionId)
+    const RoomInfo = await DynamoClient.getRoomInfo(ConnectionId)
 
-    if (RoomCode) {
+    if (RoomInfo) {
+      const { RoomCode } = RoomInfo
       const Event = await DynamoClient.disconnect(RoomCode, ConnectionId)
       const Connections = publishToConnections(RoomCode, ConnectionId, Event)
 

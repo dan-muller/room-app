@@ -8,24 +8,26 @@ if (!TableName) {
 }
 
 export const connect = async (
-  RoomCode: string,
   ConnectionId: string,
-  Name: string
+  RoomCode: string,
+  UserId: string,
+  UserName: string
 ) => {
   const Item = {
     ConnectionId,
     EventType: 'Connect',
-    Name,
     PK: RoomCode,
     SK: `ConnectionId:${ConnectionId}|EventType:Connect`,
     Timestamp: Date.now(),
+    UserId,
+    UserName,
   }
   console.log({ TableName, Item })
   await new DynamoDB.DocumentClient().put({ TableName, Item }).promise()
   return { ...Item, RoomCode: Item.PK }
 }
 
-export const disconnect = async (RoomCode: string, ConnectionId: string) => {
+export const disconnect = async (ConnectionId: string, RoomCode: string) => {
   const Item = {
     ConnectionId,
     EventType: 'Disconnect',
@@ -40,10 +42,13 @@ export const disconnect = async (RoomCode: string, ConnectionId: string) => {
 
 type RoomInfo = {
   RoomCode: string
-  Name: string
+  UserId: string
+  UserName: string
 }
 
-export const getRoomInfo = async (ConnectionId: string): Promise<RoomInfo> => {
+export const getRoomInfo = async (
+  ConnectionId: string
+): Promise<RoomInfo | undefined> => {
   const IndexName = 'ConnectionIdIndex'
   const KeyConditionExpression = 'ConnectionId = :ConnectionId'
   const ExpressionAttributeValues = { ':ConnectionId': ConnectionId }
@@ -57,15 +62,29 @@ export const getRoomInfo = async (ConnectionId: string): Promise<RoomInfo> => {
     .promise()
     .then((value) => {
       const { Items } = value
+      if (Items && Items[0]) {
+        const { PK: RoomCode, UserId, UserName } = Items[0]
+        if (RoomCode && UserId && UserName) {
+          const RoomInfo: RoomInfo = { RoomCode, UserId, UserName }
+          console.log({
+            TableName,
+            IndexName,
+            KeyConditionExpression,
+            ExpressionAttributeValues,
+            Items,
+            RoomInfo,
+          })
+          return { RoomCode, UserId, UserName }
+        }
+      }
       console.log({
         TableName,
         IndexName,
         KeyConditionExpression,
         ExpressionAttributeValues,
         Items,
-        RoomCode: Items?.[0]?.PK,
       })
-      return { RoomCode: Items?.[0]?.PK, Name: Items?.[0]?.Name }
+      return undefined
     })
 }
 
