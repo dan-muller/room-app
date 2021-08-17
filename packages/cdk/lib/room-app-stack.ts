@@ -48,7 +48,7 @@ export class RoomAppStack extends cdk.Stack {
         name: 'UserId',
         type: dynamodb.AttributeType.STRING,
       },
-      indexName: 'ConnectionIdIndex',
+      indexName: 'ConnectionIdIndex2',
       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
     })
 
