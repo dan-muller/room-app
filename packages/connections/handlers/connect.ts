@@ -11,24 +11,35 @@ const connectHandler: Handler<APIGatewayEvent> = async (event) => {
     const UserId = event.headers?.UserId
     const UserName = event.queryStringParameters?.Name
 
+    console.log({
+      ConnectionId,
+      RoomCode,
+      UserId,
+      UserName,
+    })
+
     if (ConnectionId && RoomCode && UserId && UserName) {
       const Event = await DynamoClient.connect(
         ConnectionId,
         RoomCode,
         UserId,
-        UserName
+        UserName,
       )
       const Connections = publishToConnections(RoomCode, ConnectionId, Event)
 
-      return { statusCode: 200, body: JSON.stringify({ Connections }) }
+      const Response = { statusCode: 200, body: JSON.stringify({ Connections }) }
+      console.log(Response)
+      return Response
     }
-    return {
+    const Response = {
       statusCode: 401,
       body: JSON.stringify({
         message: 'Please provide all of the values.',
         data: { ConnectionId, RoomCode, UserId, UserName },
       }),
     }
+    console.log(Response)
+    return Response
   } catch (e) {
     console.error('error!', e)
     return {
