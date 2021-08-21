@@ -68,26 +68,4 @@ describe('useCookie', () => {
     expect(nextValueFn).lastCalledWith(initialValue)
     expect(nextValueFn).lastReturnedWith(nextValue)
   })
-
-  it('should work for objects', () => {
-    type T = {
-      name: string
-      count: number
-    }
-    const getT = (): T => ({
-      count: faker.datatype.number(900) + 100,
-      name: faker.lorem.word(),
-    })
-
-    const key = faker.lorem.word()
-    const initialValue: T = getT()
-    const nextValue: T = getT()
-
-    const { result } = renderHook(() => useCookie(key, initialValue))
-    const [_, setValue] = result.current
-    act(() => setValue(nextValue))
-
-    const [actualValue] = result.current
-    expect(actualValue).toBe(nextValue)
-  })
 })

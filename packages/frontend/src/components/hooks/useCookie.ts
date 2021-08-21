@@ -1,41 +1,33 @@
 import Cookies, { CookieAttributes } from 'js-cookie'
 import React from 'react'
 
-const get = <T>(key: string) => {
-  const value = Cookies.get(key)
-  if (value) {
-    return JSON.parse(value) as T
-  }
-  return undefined
-}
+const get = (key: string) => Cookies.get(key)
 
-const set = <T>(key: string, value: T, options?: CookieAttributes) => {
-  Cookies.set(key, JSON.stringify(value), options)
-  return value
-}
+const set = (key: string, value: string, options?: CookieAttributes) =>
+  Cookies.set(key, value, options) ?? value
 
-const useCookie = <T = any>(
+const useCookie = (
   key: string,
-  initialValue: T | (() => T),
-  initialOptions?: CookieAttributes
+  initialValue: string | (() => string),
+  initialOptions?: CookieAttributes,
 ): [
-  T,
-  (dispatch: T | ((prevState: T) => T), options?: CookieAttributes) => void
+  string,
+  (dispatch: string | ((prevState: string) => string), options?: CookieAttributes) => void
 ] => {
   // Pass initial state function to useState so logic is only executed once
-  const [current, setValue] = React.useState<T>(() => {
-    let value = get<T>(key)
+  const [current, setValue] = React.useState(() => {
+    let value = get(key)
     if (value) {
       return value
     }
     if (typeof initialValue === 'function') {
-      return set<T>(key, (initialValue as Function)(), initialOptions)
+      return set(key, (initialValue as Function)(), initialOptions)
     }
-    return set<T>(key, initialValue)
+    return set(key, initialValue)
   })
   return [
     current,
-    // Return a wrapped version of useState's setter function that persists the new value to localStorage.
+    // Return a wrapped version of useState's setter function that persists the new value to Cookies.
     (dispatch, options) => {
       try {
         let value
@@ -45,7 +37,7 @@ const useCookie = <T = any>(
           value = dispatch
         }
         setValue(value)
-        set<T>(key, value, options)
+        set(key, value, options)
       } catch (error) {
         console.log(error)
       }
