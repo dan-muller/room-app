@@ -14,7 +14,7 @@ describe('useCookie', () => {
     jest
       .spyOn(Object.getPrototypeOf(Cookies), 'set')
       .mockImplementation(
-        (key, value) => (store[key as string] = JSON.stringify(value))
+        (key, value) => (store[key as string] = value as string)
       )
   })
 
