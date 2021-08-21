@@ -202,5 +202,6 @@ export class RoomAppStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
     new cdk.CfnOutput(this, "ENDPOINT", { value: ENDPOINT });
+    
   }
 }
