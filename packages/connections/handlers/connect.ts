@@ -3,15 +3,22 @@ import { APIGatewayEvent, Handler } from 'aws-lambda'
 import * as DynamoClient from 'clients/dynamo'
 import publishToConnections from 'actions/publishToConnections'
 
-const parseCookies = (Cookie: string): { [key: string]: string } => Object.fromEntries(Cookie.split(',').map((param) => param.split('='))
-  .filter(([key]) => key))
+export const parseCookie = (Cookie: string): { [key: string]: string } => {
+  const a = Cookie.split('; ')
+  const b = a.map((param) => param.split('='))
+  const c = b.filter(([key]) => key)
+  const d = Object.fromEntries(c)
+  console.log(a, b, c, d)
+  return Object.fromEntries(Cookie.split('; ').map((param) => param.split('='))
+    .filter(([key]) => key))
+}
 
 const connectHandler: Handler<APIGatewayEvent> = async (event) => {
   console.log('Connect Event:', event)
   try {
     const ConnectionId = event.requestContext.connectionId
     const RoomCode = event.queryStringParameters?.RoomCode
-    const { UserId } = parseCookies(event.headers?.Cookie ?? '')
+    const { UserId } = parseCookie(event.headers?.Cookie ?? '')
     const UserName = event.queryStringParameters?.Name
 
     console.log({
