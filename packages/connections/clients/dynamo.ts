@@ -64,25 +64,23 @@ export const getRoomInfo = async (
       const { Items } = value
       if (Items && Items[0]) {
         const { PK: RoomCode, UserId, UserName } = Items[0]
-        if (RoomCode && UserId && UserName) {
-          const RoomInfo: RoomInfo = { RoomCode, UserId, UserName }
-          console.log({
-            TableName,
-            IndexName,
-            KeyConditionExpression,
-            ExpressionAttributeValues,
-            Items,
-            RoomInfo,
-          })
-          return { RoomCode, UserId, UserName }
-        }
+        const RoomInfo: RoomInfo = { RoomCode, UserId, UserName }
+        console.log({
+          ExpressionAttributeValues,
+          IndexName,
+          Items,
+          KeyConditionExpression,
+          RoomInfo,
+          TableName,
+        })
+        return RoomInfo
       }
       console.log({
-        TableName,
-        IndexName,
-        KeyConditionExpression,
         ExpressionAttributeValues,
+        IndexName,
         Items,
+        KeyConditionExpression,
+        TableName,
       })
       return undefined
     })
