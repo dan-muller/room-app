@@ -41,6 +41,7 @@ export const disconnect = async (ConnectionId: string, RoomCode: string) => {
 }
 
 type RoomInfo = {
+  Connected: boolean
   RoomCode: string
   UserId: string
   UserName: string
@@ -62,9 +63,13 @@ export const getRoomInfo = async (
     .promise()
     .then((value) => {
       const { Items } = value
-      if (Items && Items[0]) {
-        const { PK: RoomCode, UserId, UserName } = Items[0]
-        const RoomInfo: RoomInfo = { RoomCode, UserId, UserName }
+      if (Items) {
+        const RoomInfo = Items.reduce((acc, item) => ({
+          Connected: item.EventType === 'Connect',
+          RoomCode: acc.RoomCode ?? item.PK,
+          UserId: acc.UserId ?? item.UserId,
+          UserName: acc.UserName ?? item.UserName,
+        } as RoomInfo), {}) as RoomInfo
         console.log({
           ExpressionAttributeValues,
           IndexName,
@@ -73,7 +78,7 @@ export const getRoomInfo = async (
           RoomInfo,
           TableName,
         })
-        return RoomInfo
+        return RoomInfo as RoomInfo
       }
       console.log({
         ExpressionAttributeValues,
