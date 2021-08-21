@@ -49,7 +49,7 @@ type RoomInfo = {
 export const getRoomInfo = async (
   ConnectionId: string
 ): Promise<RoomInfo | undefined> => {
-  const IndexName = 'ConnectionIdIndex2'
+  const IndexName = 'ConnectionIdIndex'
   const KeyConditionExpression = 'ConnectionId = :ConnectionId'
   const ExpressionAttributeValues = { ':ConnectionId': ConnectionId }
   return new DynamoDB.DocumentClient()
