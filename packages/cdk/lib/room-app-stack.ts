@@ -41,6 +41,7 @@ export class RoomAppStack extends cdk.Stack {
     });
     connectionsTable.addGlobalSecondaryIndex({
       partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "UserId", type: dynamodb.AttributeType.STRING },
       indexName: "ConnectionIdIndex",
       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
     });
