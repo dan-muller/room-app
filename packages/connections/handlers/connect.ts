@@ -21,13 +21,6 @@ const connectHandler: Handler<APIGatewayEvent> = async (event) => {
     const { UserId } = parseCookie(event.headers?.Cookie ?? '')
     const UserName = event.queryStringParameters?.Name
 
-    console.log({
-      ConnectionId,
-      RoomCode,
-      UserId,
-      UserName,
-    })
-
     if (ConnectionId && RoomCode && UserId && UserName) {
       const Event = await DynamoClient.connect(
         ConnectionId,
