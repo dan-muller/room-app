@@ -1,14 +1,14 @@
-import * as acm from "@aws-cdk/aws-certificatemanager";
-import * as apigwv2 from "@aws-cdk/aws-apigatewayv2";
-import * as apigwv2i from "@aws-cdk/aws-apigatewayv2-integrations";
-import * as cdk from "@aws-cdk/core";
-import * as cloudfront from "@aws-cdk/aws-cloudfront";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
-import * as iam from "@aws-cdk/aws-iam";
-import * as lambda from "@aws-cdk/aws-lambda";
-import * as origins from "@aws-cdk/aws-cloudfront-origins";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as s3 from "@aws-cdk/aws-s3";
+import * as acm from '@aws-cdk/aws-certificatemanager'
+import * as apigwv2 from '@aws-cdk/aws-apigatewayv2'
+import * as apigwv2i from '@aws-cdk/aws-apigatewayv2-integrations'
+import * as cdk from '@aws-cdk/core'
+import * as cloudfront from '@aws-cdk/aws-cloudfront'
+import * as dynamodb from '@aws-cdk/aws-dynamodb'
+import * as iam from '@aws-cdk/aws-iam'
+import * as lambda from '@aws-cdk/aws-lambda'
+import * as origins from '@aws-cdk/aws-cloudfront-origins'
+import * as route53 from '@aws-cdk/aws-route53'
+import * as s3 from '@aws-cdk/aws-s3'
 
 export interface RoomAppProps extends cdk.StackProps {
   fromAddress?: string;
@@ -42,11 +42,6 @@ export class RoomAppStack extends cdk.Stack {
     connectionsTable.addGlobalSecondaryIndex({
       partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
       indexName: "ConnectionIdIndex",
-      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
-    });
-    connectionsTable.addGlobalSecondaryIndex({
-      partitionKey: { name: "PlayerId", type: dynamodb.AttributeType.STRING },
-      indexName: "PlayerIdIndex",
       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
     });
 
