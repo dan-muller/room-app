@@ -182,7 +182,8 @@ export class RoomAppStack extends cdk.Stack {
                 "RoomCode",
               ),
             cookieBehavior: cloudfront.OriginRequestCookieBehavior.allowList(
-              "UserId"
+              "UserId",
+              "Temp"
             )
           }
         ),
