@@ -39,12 +39,6 @@ export class RoomAppStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-    connectionsTable.addGlobalSecondaryIndex({
-      partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "UserId", type: dynamodb.AttributeType.STRING },
-      indexName: "ConnectionIdIndex2",
-      projectionType: dynamodb.ProjectionType.ALL,
-    });
 
     const frontendBucket = new s3.Bucket(this, "FrontendBucket");
 
