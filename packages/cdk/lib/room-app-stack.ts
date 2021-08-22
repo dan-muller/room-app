@@ -43,7 +43,7 @@ export class RoomAppStack extends cdk.Stack {
       partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "UserId", type: dynamodb.AttributeType.STRING },
       indexName: "ConnectionIdIndex",
-      projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+      projectionType: dynamodb.ProjectionType.ALL,
     });
 
     const frontendBucket = new s3.Bucket(this, "FrontendBucket");
@@ -184,7 +184,6 @@ export class RoomAppStack extends cdk.Stack {
               ),
             cookieBehavior: cloudfront.OriginRequestCookieBehavior.allowList(
               "UserId",
-              "Temp"
             )
           }
         ),

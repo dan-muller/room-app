@@ -17,8 +17,6 @@ const Context = React.createContext<Context>({
 export const Provider: React.FC = ({ children }) => {
   const { RoomCode, Name } = useParams()
   const [userId] = useCookie('UserId', uuid, { expires: 999999 })
-  const [temp] = useCookie('Temp', uuid, { expires: 999999 })
-  console.log(temp)
   return (
     <Context.Provider value={{ userId, roomCode: RoomCode, name: Name }}>
       {children}
