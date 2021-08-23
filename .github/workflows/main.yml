@@ -39,11 +39,11 @@ jobs:
       - name: Install and Build 🔧
         run: |
           yarn install
-          yarn run build
+          yarn workspaces run build
 
       - name: Run Tests 🧪
         run: |
-          yarn run test
+          yarn workspaces run test
 
       - name: Identify account and region (Test Account) 🔎
         working-directory: packages/cdk
