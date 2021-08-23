@@ -2,18 +2,19 @@ import { ApiGatewayManagementApi } from 'aws-sdk'
 
 import * as DynamoClient from 'clients/dynamo'
 
-const Endpoint = process.env.ENDPOINT
-if (!Endpoint) {
-  throw new Error('The environment variable ENDPOINT must be set.')
-}
-const Api = new ApiGatewayManagementApi({
-  endpoint: process.env.ENDPOINT,
-})
 
 export const postToConnections = async (
   Connections: DynamoClient.Connection[],
   Event: any
 ) => {
+  const Endpoint = process.env.ENDPOINT
+  if (!Endpoint) {
+    throw new Error('The environment variable ENDPOINT must be set.')
+  }
+  const Api = new ApiGatewayManagementApi({
+    endpoint: process.env.ENDPOINT,
+  })
+
   const PostToConnections = Promise.all(
     Connections.map(async ({ ConnectionId }) =>
       Api.postToConnection(
