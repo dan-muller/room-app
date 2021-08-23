@@ -4,7 +4,7 @@ import parseCookie from 'lib/parseCookie'
 import Error from 'lib/error'
 import logger from 'lib/logger'
 
-const connectHandler: Handler<APIGatewayEvent> = async (event, context, callback) => {
+const connectHandler: Handler<APIGatewayEvent> = async (event, _context, callback) => {
   const ConnectionId = event.requestContext.connectionId
   const RoomCode = event.queryStringParameters?.RoomCode
   const { UserId } = parseCookie(event.headers?.Cookie ?? '')
