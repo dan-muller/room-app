@@ -1,9 +1,9 @@
 import { APIGatewayEvent, Handler } from 'aws-lambda'
 
+import logger from 'lib/logger'
 import parseCookie from 'lib/parseCookie'
 import { BadRequest } from 'lib/error'
-import logger from 'lib/logger'
-import { OK } from '../lib/response'
+import { OKResponse } from 'lib/response'
 
 const connectHandler: Handler<APIGatewayEvent> = async (event, _context, callback) => {
   const ConnectionId = event.requestContext.connectionId
@@ -18,8 +18,9 @@ const connectHandler: Handler<APIGatewayEvent> = async (event, _context, callbac
       UserName,
     }
     logger.log(i)
-    const response = new OK()
-    callback(null, response)
+    const response = new OKResponse(JSON.stringify(i))
+    logger.log(response)
+    // callback(null, response)
     return response
   } else {
     const err = new BadRequest( 'Missing request arguments.', [
@@ -28,7 +29,7 @@ const connectHandler: Handler<APIGatewayEvent> = async (event, _context, callbac
       ...(!UserId ? [`Invalid UserId value: ${UserId}`] : []),
       ...(!UserName ? [`Invalid UserName value: ${UserName}`] : []),
     ].join('. '))
-    callback(err, err.response)
+    // callback(err)
     return err.response
   }
 }

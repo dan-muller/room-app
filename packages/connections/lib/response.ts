@@ -1,11 +1,15 @@
-class Response {
-  constructor(public readonly statusCode: number, public readonly statusDescription?: string, public readonly headers?: Record<string, string>, public readonly cookies?: Record<string, string>) {
+export abstract class Response {
+  protected constructor(public readonly statusCode: number, public readonly body: string) {}
+}
+
+export class OKResponse extends Response {
+  constructor(body: string) {
+    super(200, body)
   }
 }
-export default Response
 
-export class OK extends Response {
-  constructor(headers?: Record<string, string>, cookies?: Record<string, string>) {
-    super(200, "OK", headers, cookies)
+export class BadRequestResponse extends Response {
+  constructor(body: string) {
+    super(400, body)
   }
 }
