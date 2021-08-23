@@ -8,7 +8,7 @@ abstract class _Error extends Error {
   }
 }
 
-export class BadRequest extends _Error {
+export class BadRequestError extends _Error {
   response = new BadRequestResponse(this.message)
   constructor(message: string, comment?: string | null) {
     super('Bad Request', message, comment)

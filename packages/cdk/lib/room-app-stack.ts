@@ -101,7 +101,7 @@ export class RoomAppStack extends cdk.Stack {
     });
     const defaultFn = new lambda.Function(this, "DefaultHandler", {
       ...lambdaProps,
-      handler: "handlers.Default",
+      handler: "handlers.SendMessage",
     });
 
     connectionsTable.grantFullAccess(connectFn);
