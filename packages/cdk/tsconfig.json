@@ -4,5 +4,5 @@
   },
   "extends": "../../tsconfig.json",
   "exclude": ["cdk.out", "node_modules"],
-  "include": ["bin", "lib"]
+  "include": ["./"]
 }

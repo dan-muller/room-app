@@ -1,9 +1,11 @@
 import React from 'react'
 
-import { Button } from './Button'
-import { Input } from './Input'
+import { Button } from 'components/atoms/Button'
+import { Input } from 'components/atoms/Input'
 
-const LobbyComponent: React.FC<{ sendMessage: (message: string) => boolean }> =
+type Message = string
+
+const LobbyComponent: React.FC<{ sendMessage: (message: Message) => boolean }> =
   ({ sendMessage }) => {
     const [message, setMessage] = React.useState<string>(
       'Hello WS, I have connected.'
@@ -60,27 +62,28 @@ const useWebSocketUrl = (name: string, roomCode: string) => {
   return url
 }
 
-const LobbyContainer: React.FC<{ name: string; roomCode: string }> = ({
-  name,
-  roomCode,
-}) => {
+function useSendMessageFn(name: string, roomCode: string) {
   const url = useWebSocketUrl(name, roomCode)
   const ws = useWebSocket(url)
-  return (
-    <LobbyComponent
-      sendMessage={(message) => {
-        if (message && ws && ws?.readyState === WebSocket.OPEN) {
-          try {
-            ws.send(message)
-            return true
-          } catch (e) {
-            console.error('Can not send message. Error: ', e)
-          }
-        }
-        return false
-      }}
-    />
-  )
+  return (message: Message) => {
+    if (message && ws && ws?.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(message)
+        return true
+      } catch (e) {
+        console.error('Can not send message. Error: ', e)
+      }
+    }
+    return false
+  }
+}
+
+const LobbyContainer: React.FC<{ userName: string; roomCode: string }> = ({
+  userName,
+  roomCode,
+}) => {
+  const sendMessage = useSendMessageFn(userName, roomCode)
+  return <LobbyComponent sendMessage={sendMessage} />
 }
 
 export default LobbyContainer

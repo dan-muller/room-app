@@ -80,6 +80,7 @@ typings/
 # This is a Typescript repo, js and ts artifacts should not be committed.
 *.d.ts
 *.js
+!jest.config.js
 *.ts.map
 build/
 
