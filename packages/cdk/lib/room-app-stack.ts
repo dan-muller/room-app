@@ -11,104 +11,110 @@ import * as route53 from '@aws-cdk/aws-route53'
 import * as s3 from '@aws-cdk/aws-s3'
 
 export interface RoomAppProps extends cdk.StackProps {
-  fromAddress?: string;
-  domainName?: string;
-  zoneId?: string;
-  facebookAppId?: string;
-  facebookAppSecret?: string;
-  amazonClientId?: string;
-  amazonClientSecret?: string;
-  googleClientId?: string;
-  googleClientSecret?: string;
+  fromAddress?: string
+  domainName?: string
+  zoneId?: string
+  facebookAppId?: string
+  facebookAppSecret?: string
+  amazonClientId?: string
+  amazonClientSecret?: string
+  googleClientId?: string
+  googleClientSecret?: string
 }
 
 export class RoomAppStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: RoomAppProps = {}) {
-    super(scope, id, props);
+    super(scope, id, props)
 
-    const { domainName, zoneId } = props;
+    const { domainName, zoneId } = props
 
-    const stageName = "ws";
+    const stageName = 'ws'
 
-    const connectionsTable = new dynamodb.Table(this, "Connections", {
+    const connectionsTable = new dynamodb.Table(this, 'Connections', {
       partitionKey: {
-        name: "PK",
+        name: 'PK',
         type: dynamodb.AttributeType.STRING,
       },
-      sortKey: { name: "SK", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
+    })
     connectionsTable.addGlobalSecondaryIndex({
-      partitionKey: { name: "ConnectionId", type: dynamodb.AttributeType.STRING },
-      sortKey: { name: "UserId", type: dynamodb.AttributeType.STRING },
-      indexName: "ConnectionIdIndex",
+      partitionKey: {
+        name: 'ConnectionId',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: { name: 'UserId', type: dynamodb.AttributeType.STRING },
+      indexName: 'ConnectionIdIndex',
       projectionType: dynamodb.ProjectionType.ALL,
-    });
+    })
 
-    const frontendBucket = new s3.Bucket(this, "FrontendBucket");
+    const frontendBucket = new s3.Bucket(this, 'FrontendBucket')
 
-    let hostedZone, wwwDomainName, certificate, domainNames;
+    let hostedZone, wwwDomainName, certificate, domainNames
     if (domainName && zoneId) {
       hostedZone = route53.HostedZone.fromHostedZoneAttributes(
         this,
-        "HostedZone",
-        { hostedZoneId: zoneId, zoneName: domainName + "." }
-      );
-      wwwDomainName = "www." + domainName;
-      certificate = new acm.Certificate(this, "Certificate", {
+        'HostedZone',
+        { hostedZoneId: zoneId, zoneName: domainName + '.' }
+      )
+      wwwDomainName = 'www.' + domainName
+      certificate = new acm.Certificate(this, 'Certificate', {
         domainName,
         subjectAlternativeNames: [wwwDomainName],
         validation: acm.CertificateValidation.fromDns(hostedZone),
-      });
-      domainNames = [domainName, wwwDomainName];
+      })
+      domainNames = [domainName, wwwDomainName]
     }
 
-    const distro = new cloudfront.Distribution(this, "Distro", {
-      logBucket: new s3.Bucket(this, "DistroLoggingBucket"),
-      logFilePrefix: "distribution-access-logs/",
+    const distro = new cloudfront.Distribution(this, 'Distro', {
+      logBucket: new s3.Bucket(this, 'DistroLoggingBucket'),
+      logFilePrefix: 'distribution-access-logs/',
       logIncludesCookies: true,
       defaultBehavior: {
         origin: new origins.S3Origin(frontendBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
       },
-      defaultRootObject: "index.html",
+      defaultRootObject: 'index.html',
       domainNames,
       certificate,
-    });
+    })
 
     const environment = {
       CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
-      NODE_ENV: "production",
-    };
+      NODE_ENV: 'production',
+      LOG_LEVEL: 'debug',
+    }
 
     const lambdaProps = {
-      code: lambda.Code.fromAsset("../connections", { exclude: ["*.ts", "*.ts.map"]}),
+      code: lambda.Code.fromAsset('../connections', {
+        exclude: ['*.ts', '*.ts.map'],
+      }),
       environment,
       memorySize: 3000,
       runtime: lambda.Runtime.NODEJS_14_X,
       timeout: cdk.Duration.seconds(20),
-    };
+    }
 
-    const connectFn = new lambda.Function(this, "ConnectionHandler", {
+    const connectFn = new lambda.Function(this, 'ConnectionHandler', {
       ...lambdaProps,
-      handler: "handlers.Connect",
-    });
-    const disconnectFn = new lambda.Function(this, "DisconnectionHandler", {
+      handler: 'handlers.Connect',
+    })
+    const disconnectFn = new lambda.Function(this, 'DisconnectionHandler', {
       ...lambdaProps,
-      handler: "handlers.Disconnect",
-    });
-    const defaultFn = new lambda.Function(this, "DefaultHandler", {
+      handler: 'handlers.Disconnect',
+    })
+    const defaultFn = new lambda.Function(this, 'DefaultHandler', {
       ...lambdaProps,
-      handler: "handlers.SendMessage",
-    });
+      handler: 'handlers.SendMessage',
+    })
 
-    connectionsTable.grantFullAccess(connectFn);
-    connectionsTable.grantFullAccess(disconnectFn);
-    connectionsTable.grantFullAccess(defaultFn);
+    connectionsTable.grantFullAccess(connectFn)
+    connectionsTable.grantFullAccess(disconnectFn)
+    connectionsTable.grantFullAccess(defaultFn)
 
-    const webSocketApi = new apigwv2.WebSocketApi(this, "RoomAppWS", {
+    const webSocketApi = new apigwv2.WebSocketApi(this, 'RoomAppWS', {
       connectRouteOptions: {
         integration: new apigwv2i.LambdaWebSocketIntegration({
           handler: connectFn,
@@ -124,37 +130,37 @@ export class RoomAppStack extends cdk.Stack {
           handler: defaultFn,
         }),
       },
-    });
-    const webSocketStage = new apigwv2.WebSocketStage(this, "ProdStage", {
+    })
+    const webSocketStage = new apigwv2.WebSocketStage(this, 'ProdStage', {
       webSocketApi,
       stageName,
       autoDeploy: true,
-    });
+    })
 
-    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${webSocketStage.stageName}/`;
-    connectFn.addEnvironment("ENDPOINT", ENDPOINT);
-    disconnectFn.addEnvironment("ENDPOINT", ENDPOINT);
-    defaultFn.addEnvironment("ENDPOINT", ENDPOINT);
+    const ENDPOINT = `https://${webSocketApi.apiId}.execute-api.${this.region}.${this.urlSuffix}/${webSocketStage.stageName}/`
+    connectFn.addEnvironment('ENDPOINT', ENDPOINT)
+    disconnectFn.addEnvironment('ENDPOINT', ENDPOINT)
+    defaultFn.addEnvironment('ENDPOINT', ENDPOINT)
 
-    const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`;
+    const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`
     connectFn.addToRolePolicy(
       new iam.PolicyStatement({
         resources: [webSocketArn],
-        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
       })
-    );
+    )
     disconnectFn.addToRolePolicy(
       new iam.PolicyStatement({
         resources: [webSocketArn],
-        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
       })
-    );
+    )
     defaultFn.addToRolePolicy(
       new iam.PolicyStatement({
         resources: [webSocketArn],
-        actions: ["execute-api:Invoke", "execute-api:ManageConnections"],
+        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
       })
-    );
+    )
 
     distro.addBehavior(
       `/${stageName}/*`,
@@ -170,36 +176,35 @@ export class RoomAppStack extends cdk.Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         originRequestPolicy: new cloudfront.OriginRequestPolicy(
           this,
-          "WSOriginRequestPolicy",
+          'WSOriginRequestPolicy',
           {
             headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
-              "Sec-WebSocket-Extensions",
-              "Sec-WebSocket-Key",
-              "Sec-WebSocket-Version"
+              'Sec-WebSocket-Extensions',
+              'Sec-WebSocket-Key',
+              'Sec-WebSocket-Version'
             ),
             queryStringBehavior:
               cloudfront.OriginRequestQueryStringBehavior.allowList(
-                "Name",
-                "RoomCode",
+                'Name',
+                'RoomCode'
               ),
-            cookieBehavior: cloudfront.OriginRequestCookieBehavior.allowList(
-              "UserId",
-            )
+            cookieBehavior:
+              cloudfront.OriginRequestCookieBehavior.allowList('UserId'),
           }
         ),
       }
-    );
+    )
 
-    new cdk.CfnOutput(this, "FrontendBucketName", {
+    new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendBucket.bucketName,
-    });
-    new cdk.CfnOutput(this, "DistributionDomainName", {
+    })
+    new cdk.CfnOutput(this, 'DistributionDomainName', {
       value: distro.distributionDomainName,
-    });
-    new cdk.CfnOutput(this, "WSAPIEndpoint", {
+    })
+    new cdk.CfnOutput(this, 'WSAPIEndpoint', {
       value: webSocketApi.apiEndpoint,
-    });
-    new cdk.CfnOutput(this, "WebSocketARN", { value: webSocketArn });
-    new cdk.CfnOutput(this, "ENDPOINT", { value: ENDPOINT });
+    })
+    new cdk.CfnOutput(this, 'WebSocketARN', { value: webSocketArn })
+    new cdk.CfnOutput(this, 'ENDPOINT', { value: ENDPOINT })
   }
 }
