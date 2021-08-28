@@ -1,6 +1,9 @@
-import dynamoClient from '../dynamo'
-import dynamoDb from 'lib/dynamoDb'
 import assert from 'assert'
+
+import dynamoDb from 'lib/dynamoDb'
+import timestamp from 'lib/timestamp'
+
+import dynamoClient from '../dynamo'
 
 const connEvt = (
   ConnectionId: string,
@@ -10,7 +13,7 @@ const connEvt = (
   ConnectionId,
   EventType: 'Connect',
   RoomCode,
-  Timestamp: Date.now(),
+  Timestamp: timestamp.now(),
   UserName,
 })
 
@@ -21,7 +24,7 @@ const discEvt = (
   ConnectionId,
   EventType: 'Disconnect',
   RoomCode,
-  Timestamp: Date.now(),
+  Timestamp: timestamp.now(),
 })
 
 const connId = (name: string) => `ConnectionId:${name}`
