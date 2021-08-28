@@ -1,23 +1,35 @@
 import dynamo from 'clients/dynamo'
 import events from 'clients/events'
-import { OKResponse, Response } from 'lib/response'
+import { BadRequestResponse, OKResponse, Response } from 'lib/response'
+import logger from 'lib/logger'
 
 const connect = async (
-  ConnectionId: string,
-  RoomCode: string,
-  UserName: string
+  connectionId: string,
+  roomCode: string,
+  userName: string
 ): Promise<Response> => {
-  const ConnectEvent = await dynamo.createConnectEvent(
-    ConnectionId,
-    RoomCode,
-    UserName
+  logger.trace('connect', { connectionId, roomCode, userName })
+
+  const connectedEvents = await dynamo.listConnected(roomCode)
+  const connectionIds = connectedEvents.map((event) => event.ConnectionId)
+  logger.trace('connect', { connectedEvents, connectionIds })
+
+  if (connectedEvents.every((event) => event.UserName !== userName)) {
+    const connectEvent = await dynamo.createConnectEvent(
+      connectionId,
+      roomCode,
+      userName
+    )
+    logger.trace('connect', { connectEvent })
+
+    const publishEvent = await events.publish(connectionIds, connectEvent)
+    logger.trace('connect', { publishEvent })
+
+    return new OKResponse(JSON.stringify({ connectEvent, publishEvent }))
+  }
+  return new BadRequestResponse(
+    `Cannot connect to room. The name "${userName}" has already been taken.`
   )
-  const Connected = await dynamo.listConnected(RoomCode)
-  const ConnectionIds = Connected.filter(
-    (event) => event.ConnectionId !== ConnectionId
-  ).map((event) => event.ConnectionId)
-  const PublishEvent = await events.publish(ConnectionIds, ConnectEvent)
-  return new OKResponse(JSON.stringify({ ConnectEvent, PublishEvent }))
 }
 
 export default connect

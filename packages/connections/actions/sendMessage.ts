@@ -1,27 +1,39 @@
 import dynamo from 'clients/dynamo'
 import events from 'clients/events'
 import { BadRequestResponse, OKResponse, Response } from 'lib/response'
+import logger from '../lib/logger'
 
 const sendMessage = async (
-  ConnectionId: string,
-  Message: string
+  connectionId: string,
+  message: string
 ): Promise<Response> => {
-  const ConnectEvent = await dynamo.findConnectEvent(ConnectionId)
-  if (ConnectEvent?.RoomCode) {
-    const MessageEvent = await dynamo.createMessageEvent(
-      ConnectionId,
-      ConnectEvent.RoomCode,
-      Message
+  logger.trace('sendMessage', { connectionId })
+
+  const connectEvent = await dynamo.findConnectEvent(connectionId)
+  const roomCode = connectEvent?.RoomCode
+  logger.trace('sendMessage', { connectEvent, roomCode })
+
+  if (roomCode) {
+    const messageEvent = await dynamo.createMessageEvent(
+      connectionId,
+      roomCode,
+      message
     )
-    const Connected = await dynamo.listConnected(ConnectEvent.RoomCode)
-    const ConnectionIds = Connected.filter(
-      (event) => event.ConnectionId !== ConnectionId
-    ).map((event) => event.ConnectionId)
-    const PublishEvent = await events.publish(ConnectionIds, MessageEvent)
-    return new OKResponse(JSON.stringify({ MessageEvent, PublishEvent }))
+    logger.trace('sendMessage', { messageEvent })
+
+    const connectedEvents = await dynamo.listConnected(roomCode)
+    const connectionIds = connectedEvents.map((event) => event.ConnectionId)
+    logger.trace('sendMessage', { connectedEvents, connectionIds })
+
+    const publishEvent = await events.publish(connectionIds, messageEvent)
+    logger.trace('sendMessage', { publishEvent })
+
+    return new OKResponse(
+      JSON.stringify({ connectEvent, messageEvent, publishEvent })
+    )
   }
   return new BadRequestResponse(
-    `Connection id "${ConnectionId}" has no "Connect" event.`
+    `Connection id "${connectionId}" has no "Connect" event.`
   )
 }
 

@@ -1,7 +1,8 @@
 import dynamo from 'lib/dynamoDb'
-import logger from 'lib/logger'
 import env from 'lib/env'
-import { deleteFrom } from '../lib/objects'
+import logger from 'lib/logger'
+import timestamp from 'lib/timestamp'
+import { deleteFrom } from 'lib/objects'
 
 namespace dynamoClient {
   const TableName = env.get('CONNECTIONS_TABLE_NAME')
@@ -20,13 +21,13 @@ namespace dynamoClient {
   const TypeDisconnect = 'Disconnect'
   const TypeMessage = 'Message'
   const TypeEvent = 'Event'
-  type AnyEvent = ConnectEvent | DisconnectEvent | Event | MessageEvent
+  export type AnyEvent = ConnectEvent | DisconnectEvent | Event | MessageEvent
 
-  type Event = {
+  export type Event = {
     ConnectionId: string
     EventType: typeof TypeEvent
     RoomCode: string
-    Timestamp: number
+    Timestamp: timestamp.Timestamp
   }
 
   export type ConnectEvent = Omit<Event, 'EventType'> & {
@@ -46,11 +47,28 @@ namespace dynamoClient {
       PK: RoomCode,
       RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
-      Timestamp: Date.now(),
+      Timestamp: timestamp.now(),
       UserName,
     }
-    await dynamo.put({ TableName, Item })
-    logger.info('dynamo.createConnectEvent', { TableName, Item })
+    logger.trace('dynamo.createConnectEvent', {
+      ConnectionId,
+      EventType,
+      Item,
+      RoomCode,
+      UserName,
+    })
+
+    const Result = await dynamo.put({ TableName, Item })
+    logger.trace('dynamo.createConnectEvent', {
+      ConnectionId,
+      Item,
+      Result,
+      RoomCode,
+      TableName,
+      UserName,
+    })
+
+    logger.info('dynamo.createConnectEvent', { Item })
     return Item
   }
 
@@ -69,10 +87,25 @@ namespace dynamoClient {
       RoomCode,
       PK: RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
-      Timestamp: Date.now(),
+      Timestamp: timestamp.now(),
     }
-    await dynamo.put({ TableName, Item })
-    logger.info('dynamo.createDisconnectEvent', { TableName, Item })
+    logger.trace('dynamo.createDisconnectEvent', {
+      ConnectionId,
+      EventType,
+      Item,
+      RoomCode,
+    })
+
+    const Result = await dynamo.put({ TableName, Item })
+    logger.trace('dynamo.createDisconnectEvent', {
+      ConnectionId,
+      Item,
+      Result,
+      RoomCode,
+      TableName,
+    })
+
+    logger.info('dynamo.createDisconnectEvent', { Item })
     return Item
   }
 
@@ -93,10 +126,27 @@ namespace dynamoClient {
       PK: RoomCode,
       RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
-      Timestamp: Date.now(),
+      Timestamp: timestamp.now(),
     }
-    await dynamo.put({ TableName, Item })
-    logger.info('dynamo.createMessageEvent', { TableName, Item })
+    logger.trace('dynamo.createMessageEvent', {
+      ConnectionId,
+      EventType,
+      Item,
+      Message,
+      RoomCode,
+    })
+
+    const Result = await dynamo.put({ TableName, Item })
+    logger.trace('dynamo.createMessageEvent', {
+      ConnectionId,
+      Item,
+      Message,
+      Result,
+      RoomCode,
+      TableName,
+    })
+
+    logger.info('dynamo.createMessageEvent', { Item })
     return Item
   }
 
@@ -118,13 +168,35 @@ namespace dynamoClient {
   ): Promise<AnyEvent[]> => {
     const KeyConditionExpression = 'PK = :RoomCode'
     const ExpressionAttributeValues = { ':RoomCode': RoomCode }
-    const { Items } = await dynamo.query({
+    logger.trace('dynamo.listEventsForRoomCode', {
       ExpressionAttributeValues,
       KeyConditionExpression,
       TableName,
     })
+
+    const Result = await dynamo.query({
+      ExpressionAttributeValues,
+      KeyConditionExpression,
+      TableName,
+    })
+    logger.trace('dynamo.listEventsForRoomCode', {
+      ExpressionAttributeValues,
+      KeyConditionExpression,
+      Result,
+      TableName,
+    })
+
+    const { Items } = Result
     const Events = Items?.map((i) => mapEventItem(i))
-    logger.info('dynamo.listEventsForRoomCode', { TableName, Items, Events })
+    logger.trace('dynamo.listEventsForRoomCode', {
+      Events,
+      ExpressionAttributeValues,
+      Items,
+      KeyConditionExpression,
+      Result,
+      TableName,
+    })
+    logger.info('dynamo.listEventsForRoomCode', { Items, Events })
     return Events ?? []
   }
 
@@ -134,39 +206,120 @@ namespace dynamoClient {
     const IndexName = 'ConnectionIdIndex'
     const KeyConditionExpression = 'ConnectionId = :ConnectionId'
     const ExpressionAttributeValues = { ':ConnectionId': ConnectionId }
-    const { Items } = await dynamo.query({
-      TableName,
+    logger.trace('dynamo.findConnectEvent', {
+      ConnectionId,
+      ExpressionAttributeValues,
       IndexName,
       KeyConditionExpression,
-      ExpressionAttributeValues,
+      TableName,
     })
-    return Items?.[0] as ConnectEvent | undefined
+
+    const Result = await dynamo.query({
+      ExpressionAttributeValues,
+      IndexName,
+      KeyConditionExpression,
+      TableName,
+    })
+    logger.trace('dynamo.findConnectEvent', {
+      ExpressionAttributeValues,
+      IndexName,
+      KeyConditionExpression,
+      Result,
+      TableName,
+    })
+
+    const { Items } = Result
+    const Event = Items?.[0] as ConnectEvent | undefined
+    logger.trace('dynamo.findConnectEvent', {
+      Event,
+      ExpressionAttributeValues,
+      IndexName,
+      Items,
+      KeyConditionExpression,
+      Result,
+      TableName,
+    })
+    logger.info('dynamo.findConnectEvent', { Items, Event })
+    return Event
+  }
+
+  const listConnected_getFilteredEvents = (Events: AnyEvent[]) => {
+    logger.trace('dynamo.listConnected.getFilteredEvents', {
+      Events,
+    })
+    const FilteredEvents: (ConnectEvent | DisconnectEvent)[] = Events.sort(
+      (a, b) => timestamp.compare(a.Timestamp, b.Timestamp)
+    )
+      .filter(
+        (event) =>
+          'EventType' in event &&
+          [TypeConnect, TypeDisconnect].includes(event.EventType)
+      )
+      .map((event) =>
+        event.EventType === TypeConnect
+          ? (event as ConnectEvent)
+          : (event as DisconnectEvent)
+      )
+    logger.trace('dynamo.listConnected.getFilteredEvents', {
+      Events,
+      FilteredEvents,
+    })
+    return FilteredEvents
+  }
+
+  const listConnected_getConnectionIds = (
+    FilteredEvents: (ConnectEvent | DisconnectEvent)[]
+  ) => {
+    logger.trace('dynamo.listConnected.getConnectionIds', {
+      FilteredEvents,
+    })
+    const ConnectionIds = Object.values(
+      FilteredEvents.reduce((events, currentEvent) => {
+        if (
+          'EventType' in currentEvent &&
+          currentEvent.EventType === TypeDisconnect
+        ) {
+          logger.trace(
+            'dynamo.listConnected',
+            `${currentEvent.ConnectionId} has disconnected.`
+          )
+          return deleteFrom(
+            events,
+            (event) => event.ConnectionId === currentEvent.ConnectionId
+          )
+        }
+        logger.trace(
+          'dynamo.listConnected',
+          `${currentEvent.ConnectionId} has connected.`
+        )
+        return { ...events, [currentEvent.UserName]: currentEvent }
+      }, {} as { [userName: string]: ConnectEvent })
+    )
+    logger.trace('dynamo.listConnected.getConnectionIds', {
+      ConnectionIds,
+      FilteredEvents,
+    })
+    return ConnectionIds
   }
 
   export const listConnected = async (
     RoomCode: string
   ): Promise<ConnectEvent[]> => {
+    logger.trace('dynamo.listConnected', {
+      RoomCode,
+    })
+
     const Events = await dynamoClient.listEventsForRoomCode(RoomCode)
-    const ConnectionIds = Object.values(
-      Events.sort((a, b) => a.Timestamp - b.Timestamp)
-        .filter(
-          (event) =>
-            'EventType' in event &&
-            [TypeConnect, TypeDisconnect].includes(event.EventType)
-        )
-        .reduce(
-          (events, currentEvent) =>
-            'EventType' in currentEvent &&
-            currentEvent.EventType === TypeConnect
-              ? { ...events, [currentEvent.UserName]: currentEvent }
-              : deleteFrom(
-                  events,
-                  (event) => event.ConnectionId === currentEvent.ConnectionId
-                ),
-          {} as { [userName: string]: ConnectEvent }
-        )
-    )
-    logger.info('listConnected', { ConnectionIds })
+    const FilteredEvents = listConnected_getFilteredEvents(Events)
+    const ConnectionIds = listConnected_getConnectionIds(FilteredEvents)
+
+    logger.trace('dynamo.listConnected', {
+      Events,
+      RoomCode,
+      FilteredEvents,
+      ConnectionIds,
+    })
+    logger.info('dynamo.listConnected', { ConnectionIds })
     return ConnectionIds
   }
 }
