@@ -44,7 +44,6 @@ export class RoomAppStack extends cdk.Stack {
         name: 'ConnectionId',
         type: dynamodb.AttributeType.STRING,
       },
-      sortKey: { name: 'UserId', type: dynamodb.AttributeType.STRING },
       indexName: 'ConnectionIdIndex',
       projectionType: dynamodb.ProjectionType.ALL,
     })
