@@ -6,13 +6,18 @@ namespace apiGatewayManagementApi {
   export const postToConnection = (
     endpoint: string,
     params: ApiGatewayManagementApi.Types.PostToConnectionRequest
-  ) =>
-    new ApiGatewayManagementApi({ endpoint })
+  ) => {
+    logger.trace('api.postToConnection.endpoint', endpoint)
+    logger.trace('api.postToConnection.params', params)
+    const result = new ApiGatewayManagementApi({ endpoint })
       .postToConnection(params, (err, data) => {
-        data && logger.debug('api postToConnection data: ', data)
-        err && logger.debug('api postToConnection err: ', err)
+        if (data) logger.debug('api.postToConnection.data: ', data)
+        if (err) logger.debug('api.postToConnection.err: ', err)
       })
       .promise()
+    logger.trace('api.postToConnection.result', result)
+    return result
+  }
 }
 
 export default apiGatewayManagementApi

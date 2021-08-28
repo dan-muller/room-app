@@ -1,4 +1,5 @@
 // @ts-ignore
+
 jest.mock('lib/logger', () => ({
   critical: () => {},
   debug: () => {},

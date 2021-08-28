@@ -4,6 +4,7 @@ namespace env {
     | 'ENDPOINT'
     | 'LOG_LEVEL'
     | 'NODE_ENV'
+
   export const get = (
     key: EnvVarStr,
     defaultValue?: string | (() => string)
