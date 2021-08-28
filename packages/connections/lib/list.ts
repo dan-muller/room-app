@@ -1,1 +1,0 @@
-export const conditionalList = <T>(...elements: (T | false)[]): T[] => elements.filter(element => element) as T[]

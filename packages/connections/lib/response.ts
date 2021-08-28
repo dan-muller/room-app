@@ -1,8 +1,11 @@
 import logger from './logger'
 
 export abstract class Response {
-  protected constructor(public readonly statusCode: number, public readonly body?: string) {
-    logger.debug(this)
+  protected constructor(
+    public readonly statusCode: number,
+    public readonly body?: string
+  ) {
+    logger.info(this)
   }
 }
 

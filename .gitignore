@@ -87,3 +87,5 @@ build/
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+packages/connections/coverage/

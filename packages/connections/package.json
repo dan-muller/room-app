@@ -17,6 +17,9 @@
     "setupFiles": [
       "dotenv/config"
     ],
+    "setupFilesAfterEnv": [
+      "./setupTests.ts"
+    ],
     "testEnvironment": "node",
     "verbose": true
   },
@@ -26,11 +29,11 @@
     "@types/node": "^14.17.4",
     "jest": "^27.0.6",
     "ts-jest": "^27.0.5",
-    "typescript": "^4.3.5",
-    "dotenv": "^10.0.0"
+    "typescript": "^4.3.5"
   },
   "scripts": {
+    "clean": "tsc --build --clean",
     "build": "tsc",
-    "test": "DOTENV_CONFIG_PATH=.env.testing jest"
+    "test": "jest"
   }
 }
