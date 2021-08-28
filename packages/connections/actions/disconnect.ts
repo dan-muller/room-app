@@ -1,7 +1,7 @@
 import dynamo from 'clients/dynamo'
 import events from 'clients/events'
+import logger from 'lib/logger'
 import { BadRequestResponse, OKResponse, Response } from 'lib/response'
-import logger from '../lib/logger'
 
 const disconnect = async (connectionId: string): Promise<Response> => {
   logger.trace('disconnect', { connectionId })
