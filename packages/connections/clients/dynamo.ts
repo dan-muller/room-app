@@ -1,4 +1,4 @@
-import dynamo from 'lib/dynamoDb'
+import dynamo from 'lib/dynamoDB'
 import env from 'lib/env'
 import logger from 'lib/logger'
 import timestamp from 'lib/timestamp'

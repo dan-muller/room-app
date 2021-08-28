@@ -16,13 +16,17 @@ export class OKResponse extends Response {
 }
 
 export class BadRequestResponse extends Response {
+  public readonly reason?: string
   constructor(body?: string) {
     super(400, body)
+    this.reason = body
   }
 }
 
 export class InternalServerErrorResponse extends Response {
+  public readonly reason?: string
   constructor(body?: string) {
     super(500, body)
+    this.reason = body
   }
 }

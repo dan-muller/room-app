@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import dynamoDb from 'lib/dynamoDb'
+import dynamoDB from 'lib/dynamoDB'
 import timestamp from 'lib/timestamp'
 
 import dynamoClient from '../dynamo'
@@ -35,7 +35,7 @@ describe('dynamoClient', () => {
       const ConnectionId = 'ConnectionId'
       const RoomCode = 'RoomCode'
       const UserName = 'UserName'
-      jest.spyOn(dynamoDb, 'put').mockResolvedValue(undefined as any)
+      jest.spyOn(dynamoDB, 'put').mockResolvedValue(undefined as any)
       const response = await dynamoClient.createConnectEvent(
         ConnectionId,
         RoomCode,
@@ -51,7 +51,7 @@ describe('dynamoClient', () => {
     it('should return event with the given values', async () => {
       const ConnectionId = 'ConnectionId'
       const RoomCode = 'RoomCode'
-      jest.spyOn(dynamoDb, 'put').mockResolvedValue(undefined as any)
+      jest.spyOn(dynamoDB, 'put').mockResolvedValue(undefined as any)
       const response = await dynamoClient.createDisconnectEvent(
         ConnectionId,
         RoomCode
@@ -66,7 +66,7 @@ describe('dynamoClient', () => {
       const ConnectionId = 'ConnectionId'
       const RoomCode = 'RoomCode'
       const Message = 'Message'
-      jest.spyOn(dynamoDb, 'put').mockResolvedValue(undefined as any)
+      jest.spyOn(dynamoDB, 'put').mockResolvedValue(undefined as any)
       const response = await dynamoClient.createMessageEvent(
         ConnectionId,
         RoomCode,
@@ -82,7 +82,7 @@ describe('dynamoClient', () => {
     it('maps ConnectEvent results', async () => {
       const RoomCode = 'RoomCode'
       const Items: any[] = [{ EventType: 'Connect' }]
-      jest.spyOn(dynamoDb, 'query').mockResolvedValue({ Items } as any)
+      jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
       assert('EventType' in response[0])
@@ -91,7 +91,7 @@ describe('dynamoClient', () => {
     it('maps DisconnectEvent results', async () => {
       const RoomCode = 'RoomCode'
       const Items: any[] = [{ EventType: 'Disconnect' }]
-      jest.spyOn(dynamoDb, 'query').mockResolvedValue({ Items } as any)
+      jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
       assert('EventType' in response[0])
@@ -100,7 +100,7 @@ describe('dynamoClient', () => {
     it('maps MessageEvent results', async () => {
       const RoomCode = 'RoomCode'
       const Items: any[] = [{ EventType: 'Message' }]
-      jest.spyOn(dynamoDb, 'query').mockResolvedValue({ Items } as any)
+      jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
       assert('EventType' in response[0])
@@ -109,7 +109,7 @@ describe('dynamoClient', () => {
     it('maps default Event results', async () => {
       const RoomCode = 'RoomCode'
       const Items: any[] = [{}]
-      jest.spyOn(dynamoDb, 'query').mockResolvedValue({ Items } as any)
+      jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
       expect(response[0].EventType).toBe('Event')
