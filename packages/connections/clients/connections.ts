@@ -31,21 +31,23 @@ namespace eventsClient {
       ConnectionId,
       TimeoutMillis,
     })
-    const Connection = await api.findConnection(endpoint, { ConnectionId })
-    logger.trace('connections.checkTimeout', { Connection })
-    if (Connection.LastActiveAt) {
-      const TimeSinceLastActive = timestamp.compare(
-        Connection.LastActiveAt.toISOString(),
-        timestamp.now()
-      )
-      logger.trace('connections.checkTimeout', {
-        TimeSinceLastActive,
-        Check: TimeSinceLastActive <= TimeoutMillis,
-      })
-      if (TimeSinceLastActive <= TimeoutMillis) {
-        return false
+    try {
+      const Connection = await api.findConnection(endpoint, { ConnectionId })
+      logger.trace('connections.checkTimeout', { Connection })
+      if (Connection.LastActiveAt) {
+        const TimeSinceLastActive = timestamp.compare(
+          Connection.LastActiveAt.toISOString(),
+          timestamp.now()
+        )
+        logger.trace('connections.checkTimeout', {
+          TimeSinceLastActive,
+          Check: TimeSinceLastActive <= TimeoutMillis,
+        })
+        if (TimeSinceLastActive <= TimeoutMillis) {
+          return false
+        }
       }
-    }
+    } catch {}
     return true
   }
 }
