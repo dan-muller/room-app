@@ -1,7 +1,6 @@
-import dynamo from '../clients/dynamo'
-import logger from '../lib/logger'
-import connections from '../clients/connections'
-import env from '../lib/env'
+import connections from 'clients/connections'
+import dynamo from 'clients/dynamo'
+import logger from 'lib/logger'
 
 export const checkForExistingUserWithName = async (
   events: dynamo.ConnectEvent[],
@@ -19,8 +18,7 @@ export const checkForExistingUserWithName = async (
   })
   if (existingUserWithSameName?.ConnectionId) {
     const hasMetTimeout = await connections.checkTimeout(
-      existingUserWithSameName.ConnectionId,
-      parseInt(env.get('CONNECTION_TIMEOUT'))
+      existingUserWithSameName.ConnectionId
     )
     logger.trace('connect.checkForExistingUserWithName', {
       hasMetTimeout,

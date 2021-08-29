@@ -8,16 +8,22 @@ namespace eventsClient {
   if (env.get('NODE_ENV') === 'production' && !endpoint) {
     throw new Error('The environment variable ENDPOINT must be set.')
   }
+  const timeout = env.get('CONNECTION_TIMEOUT')
+  if (env.get('NODE_ENV') === 'production' && !timeout) {
+    throw new Error('The environment variable CONNECTION_TIMEOUT must be set.')
+  }
 
   export const publishEvent = async (ConnectionIds: string[], Event: any) => {
     console.log('connections.publish', { ConnectionIds, Event })
     const Events = await Promise.all(
-      ConnectionIds.map((ConnectionId) =>
-        api.postToConnection(endpoint, {
-          ConnectionId,
-          Data: Buffer.from(JSON.stringify({ Event })),
-        })
-      )
+      ConnectionIds.map((ConnectionId) => {
+        if (!checkTimeout(ConnectionId)) {
+          api.postToConnection(endpoint, {
+            ConnectionId,
+            Data: Buffer.from(JSON.stringify({ Event })),
+          })
+        }
+      })
     )
     console.log('connections.publish', { Events })
     return Events
@@ -25,7 +31,7 @@ namespace eventsClient {
 
   export const checkTimeout = async (
     ConnectionId: string,
-    TimeoutMillis: number
+    TimeoutMillis: number = timeout
   ) => {
     logger.trace('connections.checkTimeout', {
       ConnectionId,
