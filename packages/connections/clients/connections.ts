@@ -4,11 +4,11 @@ import logger from '../lib/logger'
 import timestamp from '../lib/timestamp'
 
 namespace eventsClient {
-  const endpoint = env.get('ENDPOINT')
+  const endpoint: string = env.get('ENDPOINT')
   if (env.get('NODE_ENV') === 'production' && !endpoint) {
     throw new Error('The environment variable ENDPOINT must be set.')
   }
-  const timeout = env.get('CONNECTION_TIMEOUT')
+  const timeout: number = parseInt(env.get('CONNECTION_TIMEOUT'))
   if (env.get('NODE_ENV') === 'production' && !timeout) {
     throw new Error('The environment variable CONNECTION_TIMEOUT must be set.')
   }
