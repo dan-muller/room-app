@@ -1,5 +1,5 @@
+import connections from 'clients/connections'
 import dynamo from 'clients/dynamo'
-import events from 'clients/events'
 import logger from 'lib/logger'
 import { BadRequestResponse, OKResponse, Response } from 'lib/response'
 
@@ -25,7 +25,10 @@ const sendMessage = async (
     const connectionIds = connectedEvents.map((event) => event.ConnectionId)
     logger.trace('sendMessage', { connectedEvents, connectionIds })
 
-    const publishEvent = await events.publish(connectionIds, messageEvent)
+    const publishEvent = await connections.publishEvent(
+      connectionIds,
+      messageEvent
+    )
     logger.trace('sendMessage', { publishEvent })
 
     return new OKResponse(

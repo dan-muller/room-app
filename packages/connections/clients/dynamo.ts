@@ -74,11 +74,13 @@ namespace dynamoClient {
 
   export type DisconnectEvent = Omit<Event, 'EventType'> & {
     EventType: typeof TypeDisconnect
+    ForceDisconnect: boolean
   }
 
   export const createDisconnectEvent = async (
     ConnectionId: string,
-    RoomCode: string
+    RoomCode: string,
+    Force?: boolean
   ): Promise<DisconnectEvent> => {
     const EventType = TypeDisconnect
     const Item: DisconnectEvent & Item = {
@@ -88,6 +90,7 @@ namespace dynamoClient {
       PK: RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
+      ForceDisconnect: !!Force,
     }
     logger.trace('dynamo.createDisconnectEvent', {
       ConnectionId,

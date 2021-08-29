@@ -1,9 +1,12 @@
+import connections from 'clients/connections'
 import dynamo from 'clients/dynamo'
-import events from 'clients/events'
 import logger from 'lib/logger'
 import { BadRequestResponse, OKResponse, Response } from 'lib/response'
 
-const disconnect = async (connectionId: string): Promise<Response> => {
+const disconnect = async (
+  connectionId: string,
+  force?: boolean
+): Promise<Response> => {
   logger.trace('disconnect', { connectionId })
 
   const connectEvent = await dynamo.findConnectEvent(connectionId)
@@ -13,7 +16,8 @@ const disconnect = async (connectionId: string): Promise<Response> => {
   if (roomCode) {
     const disconnectEvent = await dynamo.createDisconnectEvent(
       connectionId,
-      roomCode
+      roomCode,
+      force
     )
     logger.trace('disconnect', { disconnectEvent })
 
@@ -21,7 +25,10 @@ const disconnect = async (connectionId: string): Promise<Response> => {
     const connectionIds = connectedEvents.map((event) => event.ConnectionId)
     logger.trace('disconnect', { connectedEvents, connectionIds })
 
-    const publishEvent = await events.publish(connectionIds, disconnectEvent)
+    const publishEvent = await connections.publishEvent(
+      connectionIds,
+      disconnectEvent
+    )
     logger.trace('disconnect', { publishEvent })
 
     return new OKResponse(
