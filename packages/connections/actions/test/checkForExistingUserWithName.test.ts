@@ -2,7 +2,6 @@ import faker from 'faker'
 
 import connections from 'clients/connections'
 import dynamo from 'clients/dynamo'
-import logger from 'lib/logger'
 
 import { checkForExistingUserWithName } from '../checkForExistingUserWithName'
 
@@ -23,7 +22,6 @@ describe('checkForExistingUserWithName', () => {
   })
 
   it('should return false when there is an event with the same user name but the connection has timed out', async () => {
-    jest.spyOn(logger, 'trace').mockImplementation(console.log)
     jest.spyOn(connections, 'checkTimeout').mockResolvedValue(true)
     jest
       .spyOn(dynamo, 'createDisconnectEvent')
