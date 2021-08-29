@@ -83,7 +83,7 @@ export class RoomAppStack extends cdk.Stack {
     const environment = {
       CONNECTIONS_TABLE_NAME: connectionsTable.tableName,
       NODE_ENV: 'production',
-      LOG_LEVEL: 'trace',
+      LOG_LEVEL: 'info',
       CONNECTION_TIMEOUT: '500',
     }
 

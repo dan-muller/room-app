@@ -1,7 +1,7 @@
-import env from 'lib/env'
 import api from 'lib/apiGatewayManagementApi'
-import logger from '../lib/logger'
-import timestamp from '../lib/timestamp'
+import env from 'lib/env'
+import logger from 'lib/logger'
+import timestamp from 'lib/timestamp'
 
 namespace eventsClient {
   const endpoint: string = env.get('ENDPOINT')
