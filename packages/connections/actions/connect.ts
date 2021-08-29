@@ -9,11 +9,11 @@ const connect = async (
   roomCode: string,
   userName: string
 ): Promise<Response> => {
-  logger.info('connect', { connectionId, roomCode, userName })
+  logger.trace('connect', { connectionId, roomCode, userName })
 
   const connectedEvents = await dynamo.listConnected(roomCode)
   const connectionIds = connectedEvents.map((event) => event.ConnectionId)
-  logger.info('connect', { connectedEvents, connectionIds })
+  logger.trace('connect', { connectedEvents, connectionIds })
 
   const existingUserWithName = await checkForExistingUserWithName(
     connectedEvents,
@@ -30,13 +30,13 @@ const connect = async (
     roomCode,
     userName
   )
-  logger.info('connect', { connectEvent })
+  logger.trace('connect', { connectEvent })
 
   const publishEvent = await connections.publishEvent(
     connectionIds,
     connectEvent
   )
-  logger.info('connect', { publishEvent })
+  logger.trace('connect', { publishEvent })
 
   return new OKResponse(JSON.stringify({ connectEvent, publishEvent }))
 }

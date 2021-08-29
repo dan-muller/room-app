@@ -6,21 +6,21 @@ export const checkForExistingUserWithName = async (
   events: dynamo.ConnectEvent[],
   userName: string
 ) => {
-  logger.info('connect.checkForExistingUserWithName', {
+  logger.trace('connect.checkForExistingUserWithName', {
     events,
     userName,
   })
   const existingUserWithSameName = events.find(
     (event) => event.UserName === userName
   )
-  logger.info('connect.checkForExistingUserWithName', {
+  logger.trace('connect.checkForExistingUserWithName', {
     existingUserWithSameName,
   })
   if (existingUserWithSameName?.ConnectionId) {
     const hasMetTimeout = await connections.checkTimeout(
       existingUserWithSameName.ConnectionId
     )
-    logger.info('connect.checkForExistingUserWithName', {
+    logger.trace('connect.checkForExistingUserWithName', {
       hasMetTimeout,
     })
     if (hasMetTimeout) {
@@ -29,18 +29,18 @@ export const checkForExistingUserWithName = async (
         existingUserWithSameName.RoomCode,
         true
       )
-      logger.info('connect.checkForExistingUserWithName', {
+      logger.trace('connect.checkForExistingUserWithName', {
         check: false,
         disconnectEvent,
       })
       return false
     }
-    logger.info('connect.checkForExistingUserWithName', {
+    logger.trace('connect.checkForExistingUserWithName', {
       check: true,
     })
     return true
   }
-  logger.info('connect.checkForExistingUserWithName', {
+  logger.trace('connect.checkForExistingUserWithName', {
     check: false,
   })
   return false
