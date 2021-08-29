@@ -194,8 +194,6 @@ export class RoomAppStack extends cdk.Stack {
       }
     )
 
-    const cleanupConnections
-
     new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendBucket.bucketName,
     })
