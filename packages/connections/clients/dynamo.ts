@@ -74,7 +74,7 @@ namespace dynamoClient {
 
   export type DisconnectEvent = Omit<Event, 'EventType'> & {
     EventType: typeof TypeDisconnect
-    ForceDisconnect: boolean
+    ForceDisconnect?: boolean
   }
 
   export const createDisconnectEvent = async (
