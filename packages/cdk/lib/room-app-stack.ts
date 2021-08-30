@@ -143,24 +143,13 @@ export class RoomAppStack extends cdk.Stack {
     defaultFn.addEnvironment('ENDPOINT', ENDPOINT)
 
     const webSocketArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/*`
-    connectFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        resources: [webSocketArn],
-        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
-      })
-    )
-    disconnectFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        resources: [webSocketArn],
-        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
-      })
-    )
-    defaultFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        resources: [webSocketArn],
-        actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
-      })
-    )
+    const webSocketPolicyProps = {
+      resources: [webSocketArn],
+      actions: ['execute-api:Invoke', 'execute-api:ManageConnections'],
+    }
+    connectFn.addToRolePolicy(new iam.PolicyStatement(webSocketPolicyProps))
+    disconnectFn.addToRolePolicy(new iam.PolicyStatement(webSocketPolicyProps))
+    defaultFn.addToRolePolicy(new iam.PolicyStatement(webSocketPolicyProps))
 
     distro.addBehavior(
       `/${stageName}/*`,

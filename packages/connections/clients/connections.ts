@@ -53,7 +53,9 @@ namespace eventsClient {
           return false
         }
       }
-    } catch {}
+    } catch (e) {
+      logger.trace('connections.checkTimeout', e)
+    }
     return true
   }
 }
