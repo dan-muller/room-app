@@ -3,6 +3,7 @@ import { APIGatewayEvent, Handler } from 'aws-lambda'
 import connect from 'actions/connect'
 import disconnect from 'actions/disconnect'
 import logger from 'lib/logger'
+import parseCookie from 'lib/parseCookie'
 import sendMessage from 'actions/sendMessage'
 import { BadRequestResponse, InternalServerErrorResponse } from 'lib/response'
 import { conditionalList } from 'lib/lists'
@@ -13,10 +14,11 @@ export const Connect: Handler<APIGatewayEvent> = async (event) => {
   const connectionId = event.requestContext.connectionId
   const roomCode = event.queryStringParameters?.RoomCode
   const userName = event.queryStringParameters?.Name
+  const { UserId: userId } = parseCookie(event.headers?.Cookie)
 
-  if (connectionId && roomCode && userName) {
+  if (connectionId && roomCode && userName && userId) {
     try {
-      return await connect(connectionId, roomCode, userName)
+      return await connect(connectionId, roomCode, userName, userId)
     } catch (e) {
       return new InternalServerErrorResponse(e.message)
     }
@@ -26,7 +28,8 @@ export const Connect: Handler<APIGatewayEvent> = async (event) => {
       'Missing request arguments',
       !connectionId && `Invalid connectionId value: ${connectionId}`,
       !roomCode && `Invalid roomCode value: ${roomCode}`,
-      !userName && `Invalid userName value: ${userName}`
+      !userName && `Invalid userName value: ${userName}`,
+      !userId && `Invalid userId value: ${userId}`
     ).join('. ')
   )
 }
