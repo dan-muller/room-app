@@ -33,12 +33,14 @@ namespace dynamoClient {
   export type ConnectEvent = Omit<Event, 'EventType'> & {
     EventType: typeof TypeConnect
     UserName: string
+    UserId: string
   }
 
   export const createConnectEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    UserName: string
+    UserName: string,
+    UserId: string
   ): Promise<ConnectEvent> => {
     const EventType = TypeConnect
     const Item: ConnectEvent & Item = {
@@ -48,6 +50,7 @@ namespace dynamoClient {
       RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
+      UserId,
       UserName,
     }
     logger.trace('dynamo.createConnectEvent', {
@@ -246,65 +249,6 @@ namespace dynamoClient {
     return Event
   }
 
-  const listConnected_getFilteredEvents = (Events: AnyEvent[]) => {
-    logger.trace('dynamo.listConnected.getFilteredEvents', {
-      Events,
-    })
-    const FilteredEvents: (ConnectEvent | DisconnectEvent)[] = Events.sort(
-      (a, b) => timestamp.compare(a.Timestamp, b.Timestamp)
-    )
-      .filter(
-        (event) =>
-          'EventType' in event &&
-          [TypeConnect, TypeDisconnect].includes(event.EventType)
-      )
-      .map((event) =>
-        event.EventType === TypeConnect
-          ? (event as ConnectEvent)
-          : (event as DisconnectEvent)
-      )
-    logger.trace('dynamo.listConnected.getFilteredEvents', {
-      Events,
-      FilteredEvents,
-    })
-    return FilteredEvents
-  }
-
-  const listConnected_getConnectionIds = (
-    FilteredEvents: (ConnectEvent | DisconnectEvent)[]
-  ) => {
-    logger.trace('dynamo.listConnected.getConnectionIds', {
-      FilteredEvents,
-    })
-    const ConnectionIds = Object.values(
-      FilteredEvents.reduce((events, currentEvent) => {
-        if (
-          'EventType' in currentEvent &&
-          currentEvent.EventType === TypeDisconnect
-        ) {
-          logger.trace(
-            'dynamo.listConnected',
-            `${currentEvent.ConnectionId} has disconnected.`
-          )
-          return deleteFrom(
-            events,
-            (event) => event.ConnectionId === currentEvent.ConnectionId
-          )
-        }
-        logger.trace(
-          'dynamo.listConnected',
-          `${currentEvent.ConnectionId} has connected.`
-        )
-        return { ...events, [currentEvent.UserName]: currentEvent }
-      }, {} as { [userName: string]: ConnectEvent })
-    )
-    logger.trace('dynamo.listConnected.getConnectionIds', {
-      ConnectionIds,
-      FilteredEvents,
-    })
-    return ConnectionIds
-  }
-
   export const listConnected = async (
     RoomCode: string
   ): Promise<ConnectEvent[]> => {
@@ -313,17 +257,59 @@ namespace dynamoClient {
     })
 
     const Events = await dynamoClient.listEventsForRoomCode(RoomCode)
-    const FilteredEvents = listConnected_getFilteredEvents(Events)
-    const ConnectionIds = listConnected_getConnectionIds(FilteredEvents)
-
+    const UniqueConnections: ConnectEvent[] = Object.values(
+      Events.sort((a, b) => timestamp.compare(a.Timestamp, b.Timestamp))
+        /**
+         * 1. Filter out non connect/disconnect events.
+         * This step is needed because this logic only cares about events with
+         * these event types.
+         */
+        .filter(
+          (event) =>
+            'EventType' in event &&
+            [TypeConnect, TypeDisconnect].includes(event.EventType)
+        )
+        /**
+         * 2. Map the events to either ConnectEvent or DisconnectEvent.
+         * This step is needed because we want the implicit type of the stream
+         * to be  `(ConnectEvent | DisconnectEvent)[]`. This logic is safe
+         * because of the preceding filter.
+         */
+        .map((event) =>
+          event.EventType === TypeConnect
+            ? (event as ConnectEvent)
+            : (event as DisconnectEvent)
+        )
+        /**
+         * 3. Reduce the stream to an object with `UserId` as keys.
+         * This step will add connect events to the object and then remove the
+         * connect events if a disconnect event with the same connection id comes
+         * up.
+         */
+        .reduce(
+          (events, currentEvent) =>
+            currentEvent.EventType === TypeDisconnect
+              ? deleteFrom(
+                  events,
+                  (event) => event.ConnectionId === currentEvent.ConnectionId
+                )
+              : { ...events, [currentEvent.UserId]: currentEvent },
+          {} as { [userId: string]: ConnectEvent }
+        )
+      /**
+       * 4. Use `Object.values` to turn the reduced object into an array.
+       * This array will be of type `ConnectEvent[]` with no connections that
+       * have disconnected and only the last connection for a `UserId` which
+       * has connected multiple times.
+       */
+    )
     logger.trace('dynamo.listConnected', {
+      UniqueConnections,
       Events,
       RoomCode,
-      FilteredEvents,
-      ConnectionIds,
     })
-    logger.info('dynamo.listConnected', { ConnectionIds })
-    return ConnectionIds
+    logger.info('dynamo.listConnected', { UniqueConnections })
+    return UniqueConnections
   }
 }
 

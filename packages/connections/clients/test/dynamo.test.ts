@@ -4,42 +4,58 @@ import dynamoDB from 'lib/dynamoDB'
 import timestamp from 'lib/timestamp'
 
 import dynamoClient from '../dynamo'
-
-const connEvt = (
-  ConnectionId: string,
-  RoomCode: string,
-  UserName: string
-): dynamoClient.ConnectEvent => ({
-  ConnectionId,
-  EventType: 'Connect',
-  RoomCode,
-  Timestamp: timestamp.now(),
-  UserName,
-})
-
-const discEvt = (
-  ConnectionId: string,
-  RoomCode: string
-): dynamoClient.DisconnectEvent => ({
-  ConnectionId,
-  EventType: 'Disconnect',
-  RoomCode,
-  Timestamp: timestamp.now(),
-})
-
-const connId = (name: string) => `ConnectionId:${name}`
+import * as faker from 'faker'
 
 describe('dynamoClient', () => {
+  type MockConnEvt = Omit<
+    dynamoClient.ConnectEvent,
+    'ConnectionId' | 'EventType' | 'Timestamp' | 'UserId'
+  > &
+    Partial<Pick<dynamoClient.ConnectEvent, 'ConnectionId' | 'UserId'>>
+  const connEvt = ({
+    ConnectionId,
+    RoomCode,
+    UserName,
+    UserId,
+  }: MockConnEvt): dynamoClient.ConnectEvent => ({
+    ConnectionId: ConnectionId ?? connId(UserName),
+    EventType: 'Connect',
+    RoomCode,
+    Timestamp: timestamp.now(),
+    UserName,
+    UserId: UserId ?? userId(UserName),
+  })
+
+  type MockDiscEvt = Omit<
+    dynamoClient.DisconnectEvent,
+    'EventType' | 'Timestamp'
+  >
+  const discEvt = ({
+    ConnectionId,
+    RoomCode,
+  }: MockDiscEvt): dynamoClient.DisconnectEvent => ({
+    ConnectionId,
+    EventType: 'Disconnect',
+    RoomCode,
+    Timestamp: timestamp.now(),
+  })
+
+  const connId = (name: string) =>
+    `ConnectionId|${name}|${faker.datatype.number({ min: 1000, max: 9999 })}`
+  const userId = (name: string) => `UserId|${name}`
+
   describe('createConnectEvent', () => {
     it('should return event with the given values', async () => {
       const ConnectionId = 'ConnectionId'
       const RoomCode = 'RoomCode'
       const UserName = 'UserName'
+      const UserId = 'UserId'
       jest.spyOn(dynamoDB, 'put').mockResolvedValue(undefined as any)
       const response = await dynamoClient.createConnectEvent(
         ConnectionId,
         RoomCode,
-        UserName
+        UserName,
+        UserId
       )
       expect(response.ConnectionId).toBe(ConnectionId)
       expect(response.RoomCode).toBe(RoomCode)
@@ -122,36 +138,39 @@ describe('dynamoClient', () => {
        * NOTE: This is an impractical test case. ConnectionId is given by AWS
        * so it should be impossible for two connect events to have the same id.
        */
-      const room = 'ROOM1'
-      const evt1 = connEvt(connId('Amy1'), room, 'Amy')
+      const RoomCode = 'ROOM1'
+      const UserName = 'Amy'
+      const evt1 = connEvt({ UserName, RoomCode })
       jest
         .spyOn(dynamoClient, 'listEventsForRoomCode')
         .mockResolvedValue([evt1, evt1])
-      const response = await dynamoClient.listConnected(room)
+      const response = await dynamoClient.listConnected(RoomCode)
       expect(response.length).toBe(1)
       expect(response[0]).toBe(evt1)
     })
 
-    it('should return one instance of a user with different connection ids', async () => {
-      const room = 'ROOM1'
-      const evt1 = connEvt(connId('Amy1'), room, 'Amy')
-      const evt2 = connEvt(connId('Amy2'), room, 'Amy')
+    it('should return one instance of a user which has connected again with different connection ids', async () => {
+      const RoomCode = 'ROOM1'
+      const UserName = 'Amy'
+      const evt1 = connEvt({ UserName, RoomCode })
+      const evt2 = connEvt({ UserName, RoomCode })
       jest
         .spyOn(dynamoClient, 'listEventsForRoomCode')
         .mockResolvedValue([evt1, evt2])
-      const response = await dynamoClient.listConnected(room)
+      const response = await dynamoClient.listConnected(RoomCode)
       expect(response.length).toBe(1)
       expect(response[0]).toBe(evt2)
     })
 
     it('should not return events for disconnected user', async () => {
-      const room = 'ROOM1'
-      const evt1 = connEvt(connId('Amy1'), room, 'Amy')
-      const evt2 = discEvt(connId('Amy2'), room)
+      const RoomCode = 'ROOM1'
+      const UserName = 'Amy'
+      const evt1 = connEvt({ UserName, RoomCode })
+      const evt2 = discEvt({ ConnectionId: connId(UserName), RoomCode })
       jest
         .spyOn(dynamoClient, 'listEventsForRoomCode')
         .mockResolvedValue([evt1, evt2])
-      const response = await dynamoClient.listConnected(room)
+      const response = await dynamoClient.listConnected(RoomCode)
       expect(response.length).toBe(0)
     })
   })

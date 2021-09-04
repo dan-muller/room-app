@@ -2,23 +2,22 @@ import connections from 'clients/connections'
 import dynamo from 'clients/dynamo'
 import logger from 'lib/logger'
 import { BadRequestResponse, OKResponse, Response } from 'lib/response'
-import { checkForExistingUserWithName } from './checkForExistingUserWithName'
 
 const connect = async (
   connectionId: string,
   roomCode: string,
-  userName: string
+  userName: string,
+  userId: string
 ): Promise<Response> => {
-  logger.trace('connect', { connectionId, roomCode, userName })
+  logger.trace('connect', { connectionId, roomCode, userName, userId })
 
-  const connectedEvents = await dynamo.listConnected(roomCode)
+  const connectedEvents = await dynamo
+    .listConnected(roomCode)
+    .then((events) => events.filter((event) => event.UserId !== userId))
   const connectionIds = connectedEvents.map((event) => event.ConnectionId)
   logger.trace('connect', { connectedEvents, connectionIds })
 
-  const existingUserWithName = await checkForExistingUserWithName(
-    connectedEvents,
-    userName
-  )
+  const existingUserWithName = false
   if (existingUserWithName) {
     return new BadRequestResponse(
       `Cannot connect to room. The name "${userName}" has already been taken.`
@@ -28,7 +27,8 @@ const connect = async (
   const connectEvent = await dynamo.createConnectEvent(
     connectionId,
     roomCode,
-    userName
+    userName,
+    userId
   )
   logger.trace('connect', { connectEvent })
 
