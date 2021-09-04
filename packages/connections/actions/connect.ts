@@ -11,13 +11,13 @@ const connect = async (
 ): Promise<Response> => {
   logger.trace('connect', { connectionId, roomCode, userName, userId })
 
-  const connectedEvents = await dynamo
-    .listConnected(roomCode)
-    .then((events) => events.filter((event) => event.UserId !== userId))
+  const connectedEvents = await dynamo.listConnected(roomCode)
   const connectionIds = connectedEvents.map((event) => event.ConnectionId)
   logger.trace('connect', { connectedEvents, connectionIds })
 
-  const existingUserWithName = false
+  const existingUserWithName = connectedEvents
+    .filter((event) => event.UserId !== userId)
+    .some((event) => event.UserName === userName)
   if (existingUserWithName) {
     return new BadRequestResponse(
       `Cannot connect to room. The name "${userName}" has already been taken.`
