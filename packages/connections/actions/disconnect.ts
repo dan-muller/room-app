@@ -7,11 +7,11 @@ const disconnect = async (
   connectionId: string,
   force?: boolean
 ): Promise<Response> => {
-  logger.trace('disconnect', { connectionId })
+  logger.debug('disconnect', { connectionId })
 
   const connectEvent = await dynamo.findConnectEvent(connectionId)
   const roomCode = connectEvent?.RoomCode
-  logger.trace('disconnect', { connectEvent, roomCode })
+  logger.debug('disconnect', { connectEvent, roomCode })
 
   if (roomCode) {
     const disconnectEvent = await dynamo.createDisconnectEvent(
@@ -19,17 +19,17 @@ const disconnect = async (
       roomCode,
       force
     )
-    logger.trace('disconnect', { disconnectEvent })
+    logger.debug('disconnect', { disconnectEvent })
 
     const connectedEvents = await dynamo.listConnected(roomCode)
     const connectionIds = connectedEvents.map((event) => event.ConnectionId)
-    logger.trace('disconnect', { connectedEvents, connectionIds })
+    logger.debug('disconnect', { connectedEvents, connectionIds })
 
     const publishEvent = await connections.publishEvent(
       connectionIds,
       disconnectEvent
     )
-    logger.trace('disconnect', { publishEvent })
+    logger.debug('disconnect', { publishEvent })
 
     return new OKResponse(
       JSON.stringify({ connectEvent, disconnectEvent, publishEvent })

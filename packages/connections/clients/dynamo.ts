@@ -134,7 +134,7 @@ namespace dynamoClient {
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
     }
-    logger.trace('dynamo.createMessageEvent', {
+    logger.debug('dynamo.createMessageEvent', {
       ConnectionId,
       EventType,
       Item,
@@ -152,7 +152,7 @@ namespace dynamoClient {
       TableName,
     })
 
-    logger.info('dynamo.createMessageEvent', { Item })
+    logger.debug('dynamo.createMessageEvent', { Item })
     return Item
   }
 
@@ -174,7 +174,7 @@ namespace dynamoClient {
   ): Promise<AnyEvent[]> => {
     const KeyConditionExpression = 'PK = :RoomCode'
     const ExpressionAttributeValues = { ':RoomCode': RoomCode }
-    logger.trace('dynamo.listEventsForRoomCode', {
+    logger.debug('dynamo.listEventsForRoomCode', {
       ExpressionAttributeValues,
       KeyConditionExpression,
       TableName,
@@ -202,7 +202,8 @@ namespace dynamoClient {
       Result,
       TableName,
     })
-    logger.info('dynamo.listEventsForRoomCode', { Items, Events })
+
+    logger.debug('dynamo.listEventsForRoomCode', { Items, Events })
     return Events ?? []
   }
 
@@ -212,7 +213,7 @@ namespace dynamoClient {
     const IndexName = 'ConnectionIdIndex'
     const KeyConditionExpression = 'ConnectionId = :ConnectionId'
     const ExpressionAttributeValues = { ':ConnectionId': ConnectionId }
-    logger.trace('dynamo.findConnectEvent', {
+    logger.debug('dynamo.findConnectEvent', {
       ConnectionId,
       ExpressionAttributeValues,
       IndexName,
@@ -245,14 +246,14 @@ namespace dynamoClient {
       Result,
       TableName,
     })
-    logger.info('dynamo.findConnectEvent', { Items, Event })
+    logger.debug('dynamo.findConnectEvent', { Items, Event })
     return Event
   }
 
   export const listConnected = async (
     RoomCode: string
   ): Promise<ConnectEvent[]> => {
-    logger.trace('dynamo.listConnected', {
+    logger.debug('dynamo.listConnected', {
       RoomCode,
     })
 
@@ -308,7 +309,7 @@ namespace dynamoClient {
       Events,
       RoomCode,
     })
-    logger.info('dynamo.listConnected', { UniqueConnections })
+    logger.debug('dynamo.listConnected', { UniqueConnections, Events })
     return UniqueConnections
   }
 }

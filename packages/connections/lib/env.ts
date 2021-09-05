@@ -1,7 +1,6 @@
 namespace env {
   type EnvVarStr =
     | 'CONNECTIONS_TABLE_NAME'
-    | 'CONNECTION_TIMEOUT'
     | 'ENDPOINT'
     | 'LOG_LEVEL'
     | 'NODE_ENV'

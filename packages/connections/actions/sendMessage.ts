@@ -7,11 +7,11 @@ const sendMessage = async (
   connectionId: string,
   message: string
 ): Promise<Response> => {
-  logger.trace('sendMessage', { connectionId })
+  logger.debug('sendMessage', { connectionId })
 
   const connectEvent = await dynamo.findConnectEvent(connectionId)
   const roomCode = connectEvent?.RoomCode
-  logger.trace('sendMessage', { connectEvent, roomCode })
+  logger.debug('sendMessage', { connectEvent, roomCode })
 
   if (roomCode) {
     const messageEvent = await dynamo.createMessageEvent(
@@ -19,17 +19,17 @@ const sendMessage = async (
       roomCode,
       message
     )
-    logger.trace('sendMessage', { messageEvent })
+    logger.debug('sendMessage', { messageEvent })
 
     const connectedEvents = await dynamo.listConnected(roomCode)
     const connectionIds = connectedEvents.map((event) => event.ConnectionId)
-    logger.trace('sendMessage', { connectedEvents, connectionIds })
+    logger.debug('sendMessage', { connectedEvents, connectionIds })
 
     const publishEvent = await connections.publishEvent(
       connectionIds,
       messageEvent
     )
-    logger.trace('sendMessage', { publishEvent })
+    logger.debug('sendMessage', { publishEvent })
 
     return new OKResponse(
       JSON.stringify({ connectEvent, messageEvent, publishEvent })
