@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import Chat from './Chat'
 import ChatBar from './ChatBar'
-import useEvents, { errorEvent, systemEvent } from './useEvents'
+import useEvents, { errorEvent, systemEvent, userEvent } from './useEvents'
 import { useWebSocket, useWebSocketUrl } from './useWebSocket'
 
 const StyledLobby = styled.div`
@@ -34,6 +34,7 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
       if (message && ws && ws.readyState === WebSocket.OPEN) {
         try {
           ws.send(message)
+          addEvent(userEvent(message))
           return true
         } catch (e) {
           console.error('Can not send message. Error: ', e)
@@ -46,7 +47,6 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
   return (
     <StyledLobby>
       <ChatBar sendMessage={sendMessage} />
-      aaa
       <Chat events={events} />
     </StyledLobby>
   )

@@ -15,42 +15,109 @@ const StyledChatWrapper = styled.div`
   justify-content: start;
 `
 const StyledChatRow = styled.div`
-  height: 36px;
+  display: flex;
+  flex-flow: column nowrap;
+  margin: 4px;
 
   :not(:last-child) {
     margin-bottom: 8px;
   }
 `
-const StyledErrorMessage = styled.div``
-const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-  <StyledErrorMessage>{message}</StyledErrorMessage>
-)
-const StyledSystemMessage = styled.div`
-  border-radius: 9999px;
+
+type MessageProps = { message: string; timestamp: string }
+
+const StyledErrorMessage = styled.div`
   align-self: center;
+  font-weight: 500;
+  color: red;
 `
-const SystemMessage: React.FC<{ message: string }> = ({ message }) => (
+const ErrorMessage: React.FC<MessageProps> = ({ message }) => (
+  <StyledChatRow>
+    <StyledErrorMessage>{message}</StyledErrorMessage>
+  </StyledChatRow>
+)
+
+const StyledSystemMessage = styled.div`
+  align-self: center;
+  font-style: italic;
+  font-weight: 100;
+`
+const SystemMessage: React.FC<MessageProps> = ({ message }) => (
   <StyledChatRow>
     <StyledSystemMessage>{message}</StyledSystemMessage>
   </StyledChatRow>
 )
-const StyledMessage = styled.div``
-const Message: React.FC<{ message: string }> = ({ message }) => (
-  <StyledMessage>{message}</StyledMessage>
+
+const StyledMessage = styled.div`
+  align-self: start;
+  background: lightskyblue;
+  border-radius: 9999px;
+  padding: 8px;
+`
+const Message: React.FC<MessageProps & { userName: string }> = ({
+  message,
+  userName,
+}) => (
+  <StyledChatRow>
+    <StyledMessage>
+      {userName}: {message}
+    </StyledMessage>
+  </StyledChatRow>
+)
+
+const StyledUserMessage = styled.div`
+  align-self: end;
+  background: lightskyblue;
+  border-radius: 9999px;
+  padding: 8px;
+`
+const UserMessage: React.FC<MessageProps> = ({ message }) => (
+  <StyledChatRow>
+    <StyledUserMessage>You: {message}</StyledUserMessage>
+  </StyledChatRow>
 )
 
 const Chat: React.FC<{ events: LobbyEvent[] }> = ({ events }) => (
   <StyledChatWrapper>
-    aaa
-    {console.log(events)}
     {events.map((event) => {
       switch (event.EventType) {
         case 'Error':
-          return <ErrorMessage message={event.Message} />
+          return (
+            <ErrorMessage message={event.Message} timestamp={event.Timestamp} />
+          )
         case 'System':
-          return <SystemMessage message={event.Message} />
+          return (
+            <SystemMessage
+              message={event.Message}
+              timestamp={event.Timestamp}
+            />
+          )
+        case 'Connect':
+          return (
+            <SystemMessage
+              message={event.Message}
+              timestamp={event.Timestamp}
+            />
+          )
+        case 'Disconnect':
+          return (
+            <SystemMessage
+              message={event.Message}
+              timestamp={event.Timestamp}
+            />
+          )
+        case 'User':
+          return (
+            <UserMessage message={event.Message} timestamp={event.Timestamp} />
+          )
         default:
-          return <Message message={event.Message} />
+          return (
+            <Message
+              message={event.Message}
+              timestamp={event.Timestamp}
+              userName={event.UserName}
+            />
+          )
       }
     })}
   </StyledChatWrapper>
