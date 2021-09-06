@@ -1,10 +1,8 @@
-import assert from 'assert'
-
-import dynamoDB from 'lib/dynamoDB'
-import timestamp from 'lib/timestamp'
+import * as faker from 'faker'
 
 import dynamoClient from '../dynamo'
-import * as faker from 'faker'
+import dynamoDB from '../../lib/dynamoDB'
+import timestamp from '../../lib/timestamp'
 
 describe('dynamoClient', () => {
   type MockConnEvt = Omit<
@@ -101,7 +99,6 @@ describe('dynamoClient', () => {
       jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
-      assert('EventType' in response[0])
       expect(response[0].EventType).toBe('Connect')
     })
     it('maps DisconnectEvent results', async () => {
@@ -110,7 +107,6 @@ describe('dynamoClient', () => {
       jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
-      assert('EventType' in response[0])
       expect(response[0].EventType).toBe('Disconnect')
     })
     it('maps MessageEvent results', async () => {
@@ -119,7 +115,6 @@ describe('dynamoClient', () => {
       jest.spyOn(dynamoDB, 'query').mockResolvedValue({ Items } as any)
       const response = await dynamoClient.listEventsForRoomCode(RoomCode)
       expect(response.length).toBe(1)
-      assert('EventType' in response[0])
       expect(response[0].EventType).toBe('Message')
     })
     it('maps default Event results', async () => {
@@ -172,6 +167,138 @@ describe('dynamoClient', () => {
         .mockResolvedValue([evt1, evt2])
       const response = await dynamoClient.listConnected(RoomCode)
       expect(response.length).toBe(0)
+    })
+
+    describe('static data test', () => {
+      it('should return only events for users that have not disconnected', async () => {
+        const Events = [
+          {
+            Timestamp: '2021-09-06T13:27:30.242Z',
+            ConnectionId: 'FPiQgfk5oAMCFrg=',
+            EventType: 'Disconnect',
+            SK: 'ConnectionId:FPiQgfk5oAMCFrg=|EventType:Disconnect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+          {
+            UserId: '75c3fcd0-f541-4215-bb13-c2112d069c19',
+            Timestamp: '2021-09-06T13:26:53.330Z',
+            ConnectionId: 'FPiMmeN7IAMCJ7A=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiMmeN7IAMCJ7A=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Ben',
+          },
+          {
+            UserId: '75c3fcd0-f541-4215-bb13-c2112d069c19',
+            Timestamp: '2021-09-06T13:27:18.344Z',
+            ConnectionId: 'FPiQgfk5oAMCFrg=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiQgfk5oAMCFrg=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Ben',
+          },
+          {
+            UserId: '75c3fcd0-f541-4215-bb13-c2112d069c19',
+            Timestamp: '2021-09-06T13:27:30.425Z',
+            ConnectionId: 'FPiSZff7IAMCJkQ=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiSZff7IAMCJkQ=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Ben',
+          },
+          {
+            Timestamp: '2021-09-06T13:27:00.454Z',
+            ConnectionId: 'FPiMmeN7IAMCJ7A=',
+            EventType: 'Disconnect',
+            SK: 'ConnectionId:FPiMmeN7IAMCJ7A=|EventType:Disconnect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+          {
+            UserId: '513c65ab-bfe5-4350-bb72-9f390be943ea',
+            Timestamp: '2021-09-06T13:25:46.521Z',
+            ConnectionId: 'FPiCDficIAMCERQ=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiCDficIAMCERQ=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Dan',
+          },
+          {
+            Timestamp: '2021-09-06T13:27:33.551Z',
+            Message: 'Hello WS, I have connected.',
+            ConnectionId: 'FPiSZff7IAMCJkQ=',
+            EventType: 'Message',
+            SK: 'ConnectionId:FPiSZff7IAMCJkQ=|EventType:Message',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+          {
+            Timestamp: '2021-09-06T13:27:36.653Z',
+            Message: 'Hello WS, I have connected.',
+            ConnectionId: 'FPiRqcwPoAMCK4w=',
+            EventType: 'Message',
+            SK: 'ConnectionId:FPiRqcwPoAMCK4w=|EventType:Message',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+          {
+            UserId: '513c65ab-bfe5-4350-bb72-9f390be943ea',
+            Timestamp: '2021-09-06T13:27:25.684Z',
+            ConnectionId: 'FPiRqcwPoAMCK4w=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiRqcwPoAMCK4w=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Dan',
+          },
+          {
+            Timestamp: '2021-09-06T13:27:17.889Z',
+            ConnectionId: 'FPiNocMgIAMCFUA=',
+            EventType: 'Disconnect',
+            SK: 'ConnectionId:FPiNocMgIAMCFUA=|EventType:Disconnect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+          {
+            UserId: '75c3fcd0-f541-4215-bb13-c2112d069c19',
+            Timestamp: '2021-09-06T13:26:59.954Z',
+            ConnectionId: 'FPiNocMgIAMCFUA=',
+            EventType: 'Connect',
+            SK: 'ConnectionId:FPiNocMgIAMCFUA=|EventType:Connect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+            UserName: 'Ben',
+          },
+          {
+            Timestamp: '2021-09-06T13:27:24.957Z',
+            ConnectionId: 'FPiCDficIAMCERQ=',
+            EventType: 'Disconnect',
+            SK: 'ConnectionId:FPiCDficIAMCERQ=|EventType:Disconnect',
+            RoomCode: 'abc123',
+            PK: 'abc123',
+          },
+        ] as unknown as dynamoClient.AnyEvent[]
+        jest
+          .spyOn(dynamoClient, 'listEventsForRoomCode')
+          .mockResolvedValue(Events)
+        const response = await dynamoClient.listConnected('RoomCode')
+        expect(response.length).toBe(1)
+        expect(response[0]).toStrictEqual({
+          UserId: '75c3fcd0-f541-4215-bb13-c2112d069c19',
+          Timestamp: '2021-09-06T13:27:30.425Z',
+          ConnectionId: 'FPiSZff7IAMCJkQ=',
+          EventType: 'Connect',
+          SK: 'ConnectionId:FPiSZff7IAMCJkQ=|EventType:Connect',
+          RoomCode: 'abc123',
+          PK: 'abc123',
+          UserName: 'Ben',
+        })
+      })
     })
   })
 })

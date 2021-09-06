@@ -250,55 +250,90 @@ namespace dynamoClient {
     return Event
   }
 
+  const listConnected_removeEvent = (
+    Events: { [EventId: string]: ConnectEvent },
+    ConnectionId: string
+  ) => {
+    const NewEvents = deleteFrom(
+      Events,
+      (event) => event.ConnectionId === ConnectionId
+    )
+    logger.trace(
+      'listConnected_removeEvent',
+      {
+        Events,
+        ConnectionId,
+        NewEvents,
+      },
+      `Event Count: ${Object.values(Events).length} -> ${
+        Object.values(NewEvents).length
+      }`
+    )
+    return NewEvents
+  }
+
+  const listConnected_addEvent = (
+    Events: { [EventId: string]: ConnectEvent },
+    Event: ConnectEvent
+  ) => {
+    const NewEvents = { ...Events, [Event.UserId]: Event }
+    logger.trace(
+      'listConnected_addEvent',
+      { Events, Event, NewEvents },
+      `Event Count: ${Object.values(Events).length} -> ${
+        Object.values(NewEvents).length
+      }`
+    )
+    return NewEvents
+  }
+
   export const listConnected = async (
     RoomCode: string
   ): Promise<ConnectEvent[]> => {
-    logger.debug('dynamo.listConnected', {
-      RoomCode,
-    })
-
+    logger.debug('dynamo.listConnected', { RoomCode })
     const Events = await dynamoClient.listEventsForRoomCode(RoomCode)
     const UniqueConnections: ConnectEvent[] = Object.values(
-      Events.sort((a, b) => timestamp.compare(a.Timestamp, b.Timestamp))
+      Events
         /**
-         * 1. Filter out non connect/disconnect events.
+         * 1. Sort the events in the order of their Timestamps
+         */
+        .sort((a, b) => timestamp.compare(a.Timestamp, b.Timestamp))
+        /**
+         * 2. Filter out non connect/disconnect events.
          * This step is needed because this logic only cares about events with
          * these event types.
          */
         .filter(
-          (event) =>
-            'EventType' in event &&
-            [TypeConnect, TypeDisconnect].includes(event.EventType)
+          (Event) =>
+            'EventType' in Event &&
+            [TypeConnect, TypeDisconnect].includes(Event.EventType)
         )
         /**
-         * 2. Map the events to either ConnectEvent or DisconnectEvent.
+         * 3. Map the events to either ConnectEvent or DisconnectEvent.
          * This step is needed because we want the implicit type of the stream
          * to be  `(ConnectEvent | DisconnectEvent)[]`. This logic is safe
          * because of the preceding filter.
          */
-        .map((event) =>
-          event.EventType === TypeConnect
-            ? (event as ConnectEvent)
-            : (event as DisconnectEvent)
+        .map((Event) =>
+          Event.EventType === TypeConnect
+            ? (Event as ConnectEvent)
+            : (Event as DisconnectEvent)
         )
         /**
-         * 3. Reduce the stream to an object with `UserId` as keys.
+         * 4. Reduce the stream to an object with `UserId` as keys.
          * This step will add connect events to the object and then remove the
          * connect events if a disconnect event with the same connection id comes
          * up.
          */
         .reduce(
-          (events, currentEvent) =>
-            currentEvent.EventType === TypeDisconnect
-              ? deleteFrom(
-                  events,
-                  (event) => event.ConnectionId === currentEvent.ConnectionId
-                )
-              : { ...events, [currentEvent.UserId]: currentEvent },
+          (Events, CurrentEvent) =>
+            CurrentEvent.EventType === TypeDisconnect
+              ? listConnected_removeEvent(Events, CurrentEvent.ConnectionId)
+              : listConnected_addEvent(Events, CurrentEvent),
           {} as { [userId: string]: ConnectEvent }
         )
       /**
-       * 4. Use `Object.values` to turn the reduced object into an array.
+       * 5. Use `Object.values` to turn the reduced object into an array.
        * This array will be of type `ConnectEvent[]` with no connections that
        * have disconnected and only the last connection for a `UserId` which
        * has connected multiple times.
