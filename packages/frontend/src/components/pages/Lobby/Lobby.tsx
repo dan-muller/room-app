@@ -3,7 +3,12 @@ import styled from 'styled-components'
 
 import Chat from './Chat'
 import ChatBar from './ChatBar'
-import useEvents, { errorEvent, systemEvent, userEvent } from './useEvents'
+import useEvents, {
+  errorEvent,
+  parseEvent,
+  systemEvent,
+  userEvent,
+} from './useEvents'
 import { useWebSocket, useWebSocketUrl } from './useWebSocket'
 
 const StyledLobby = styled.div`
@@ -26,7 +31,7 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
   const ws = useWebSocket(url, {
     onClose: () => addEvent(systemEvent('You have disconnected.')),
     onError: () => addEvent(errorEvent('An error has occurred.')),
-    onMessage: ({ data }) => addEvent(JSON.parse(data)),
+    onMessage: ({ data }) => addEvent(parseEvent(JSON.parse(data))),
     onOpen: () => addEvent(systemEvent('You have connected.')),
   })
   const sendMessage = React.useCallback(
@@ -42,7 +47,7 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
       }
       return false
     },
-    [ws]
+    [ws, addEvent]
   )
   return (
     <StyledLobby>
