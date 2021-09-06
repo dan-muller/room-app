@@ -34,9 +34,10 @@
     "typescript": "^4.3.5"
   },
   "scripts": {
+    "build": "react-scripts build",
     "dev:start": "react-scripts start",
     "dev:test": "react-scripts test",
-    "build": "react-scripts build",
+    "start": "yarn run dev:start",
     "test": "CI=true && react-scripts test"
   },
   "eslintConfig": {

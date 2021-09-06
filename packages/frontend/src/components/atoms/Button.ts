@@ -6,5 +6,5 @@ export const Button = styled.button`
   font-size: large;
   display: block;
   border: 1px solid lightblue;
-  border-radius: 50px;
+  border-radius: 99999px;
 `
