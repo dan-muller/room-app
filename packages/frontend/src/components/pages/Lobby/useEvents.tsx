@@ -56,23 +56,23 @@ const useEvents = () => {
   const [events, setEvents] = React.useState<LobbyEvent[]>([
     // {
     //   EventType: 'Error',
-    //   Message: 'Error messages will show up here!',
+    //   Message: 'Error messages will look like this!',
     //   Timestamp: new Date().toISOString(),
     // },
     // {
     //   EventType: 'Message',
-    //   Message: 'Messages will show up here!',
+    //   Message: 'Messages will look like this!',
     //   Timestamp: new Date().toISOString(),
     //   UserName: faker.name.firstName(),
     // },
     // {
     //   EventType: 'System',
-    //   Message: 'System messages will show up here!',
+    //   Message: 'System messages will look like this!',
     //   Timestamp: new Date().toISOString(),
     // },
     // {
     //   EventType: 'User',
-    //   Message: 'User messages will show up here!',
+    //   Message: 'Your messages will look like this!',
     //   Timestamp: new Date().toISOString(),
     // },
   ])

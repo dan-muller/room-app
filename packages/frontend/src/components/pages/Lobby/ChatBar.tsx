@@ -15,9 +15,7 @@ const ChatBar: React.FC<{
   ready: boolean
   sendMessage: (message: string) => boolean
 }> = ({ ready, sendMessage }) => {
-  const [message, setMessage] = React.useState<string>(
-    'Hello WS, I have connected.'
-  )
+  const [message, setMessage] = React.useState<string>('')
   const submit = React.useCallback(() => {
     const messageSent = sendMessage(message)
     if (messageSent) {
@@ -43,7 +41,7 @@ const ChatBar: React.FC<{
       <Button
         disabled={!ready || !message}
         onClick={() => submit()}
-        style={{ marginLeft: '15px' }}
+        style={{ marginLeft: '16px' }}
       >
         Send
       </Button>

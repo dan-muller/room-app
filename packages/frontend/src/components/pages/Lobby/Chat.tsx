@@ -70,8 +70,9 @@ const SystemMessage: React.FC<MessageProps> = ({ message, timestamp }) => (
 )
 
 const StyledMessage = styled.div`
-  background: lightgrey;
+  background: grey;
   border-radius: 9999px;
+  color: white;
   padding: 8px;
 `
 const Message: React.FC<MessageProps & { userName: string }> = ({
@@ -91,6 +92,7 @@ const Message: React.FC<MessageProps & { userName: string }> = ({
 const StyledUserMessage = styled.div`
   background: lightskyblue;
   border-radius: 9999px;
+  color: white;
   padding: 8px;
 `
 const UserMessage: React.FC<MessageProps> = ({ message, timestamp }) => {
