@@ -1,28 +1,49 @@
 import styled from 'styled-components'
 import React from 'react'
+
 import { LobbyEvent } from './useEvents'
 
-const StyledChatWrapper = styled.div`
-  align-content: center;
-  background: white;
-  color: black;
-  display: inline-flex;
-  flex-flow: column nowrap;
-  flex-grow: 1;
-  font-size: 16px;
-  border-radius: 24px;
-  padding: 16px;
-  justify-content: start;
+const StyledTimestamp = styled.div`
+  font-size: 12px;
+  font-weight: 100;
+  height: 12px;
 `
-const StyledChatRow = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
-  margin: 4px;
 
-  :not(:last-child) {
-    margin-bottom: 8px;
-  }
+const StyledChatRow = styled.div<{ align?: 'left' | 'right' | 'center' }>`
+  display: flex;
+  flex-flow: column;
+  margin: 4px;
+  align-items: ${({ align }) => {
+    switch (align) {
+      case 'right':
+        return 'end'
+      case 'center':
+        return 'center'
+      default:
+        return 'start'
+    }
+  }};
 `
+
+const ChatRow: React.FC<
+  React.ComponentProps<typeof StyledChatRow> & {
+    timestamp: string
+  }
+> = ({ align, children, timestamp }) => {
+  const [showMore, setShowMore] = React.useState(false)
+  return (
+    <StyledChatRow
+      align={align}
+      onMouseEnter={() => setShowMore(true)}
+      onMouseLeave={() => setShowMore(false)}
+    >
+      {children}
+      <StyledTimestamp>
+        {showMore && new Date(timestamp).toLocaleTimeString()}
+      </StyledTimestamp>
+    </StyledChatRow>
+  )
+}
 
 type MessageProps = { message: string; timestamp: string }
 
@@ -31,10 +52,10 @@ const StyledErrorMessage = styled.div`
   font-weight: 500;
   color: red;
 `
-const ErrorMessage: React.FC<MessageProps> = ({ message }) => (
-  <StyledChatRow>
+const ErrorMessage: React.FC<MessageProps> = ({ message, timestamp }) => (
+  <ChatRow timestamp={timestamp} align="center">
     <StyledErrorMessage>{message}</StyledErrorMessage>
-  </StyledChatRow>
+  </ChatRow>
 )
 
 const StyledSystemMessage = styled.div`
@@ -42,44 +63,60 @@ const StyledSystemMessage = styled.div`
   font-style: italic;
   font-weight: 100;
 `
-const SystemMessage: React.FC<MessageProps> = ({ message }) => (
-  <StyledChatRow>
+const SystemMessage: React.FC<MessageProps> = ({ message, timestamp }) => (
+  <ChatRow timestamp={timestamp} align="center">
     <StyledSystemMessage>{message}</StyledSystemMessage>
-  </StyledChatRow>
+  </ChatRow>
 )
 
 const StyledMessage = styled.div`
-  align-self: start;
-  background: lightskyblue;
+  background: lightgrey;
   border-radius: 9999px;
   padding: 8px;
 `
 const Message: React.FC<MessageProps & { userName: string }> = ({
   message,
   userName,
-}) => (
-  <StyledChatRow>
-    <StyledMessage>
-      {userName}: {message}
-    </StyledMessage>
-  </StyledChatRow>
-)
+  timestamp,
+}) => {
+  return (
+    <ChatRow timestamp={timestamp}>
+      <StyledMessage>
+        {userName}: {message}
+      </StyledMessage>
+    </ChatRow>
+  )
+}
 
 const StyledUserMessage = styled.div`
-  align-self: end;
   background: lightskyblue;
   border-radius: 9999px;
   padding: 8px;
 `
-const UserMessage: React.FC<MessageProps> = ({ message }) => (
-  <StyledChatRow>
-    <StyledUserMessage>You: {message}</StyledUserMessage>
-  </StyledChatRow>
-)
+const UserMessage: React.FC<MessageProps> = ({ message, timestamp }) => {
+  return (
+    <ChatRow timestamp={timestamp} align="right">
+      <StyledUserMessage>You: {message}</StyledUserMessage>
+    </ChatRow>
+  )
+}
+
+const StyledChatWrapper = styled.div`
+  align-content: center;
+  background: white;
+  border-radius: 24px;
+  color: black;
+  flex-grow: 1;
+  font-size: 16px;
+  justify-content: start;
+  overflow: hidden auto;
+  padding: 16px;
+`
 
 const Chat: React.FC<{ events: LobbyEvent[] }> = ({ events }) => (
   <StyledChatWrapper>
     {events.map((event) => {
+      console.log(event)
       switch (event.EventType) {
         case 'Error':
           return (

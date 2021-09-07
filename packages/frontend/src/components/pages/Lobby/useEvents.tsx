@@ -1,5 +1,4 @@
 import React from 'react'
-import * as faker from 'faker'
 
 type BaseEvent = { Message: string; Timestamp: string }
 type ConnectEvent = BaseEvent & { EventType: 'Connect'; UserName: string }
@@ -55,27 +54,27 @@ export const parseEvent = (event: any): LobbyEvent => {
 
 const useEvents = () => {
   const [events, setEvents] = React.useState<LobbyEvent[]>([
-    {
-      EventType: 'Error',
-      Message: 'Error messages will show up here!',
-      Timestamp: new Date().toISOString(),
-    },
-    {
-      EventType: 'Message',
-      Message: 'Messages will show up here!',
-      Timestamp: new Date().toISOString(),
-      UserName: faker.name.firstName(),
-    },
-    {
-      EventType: 'System',
-      Message: 'System messages will show up here!',
-      Timestamp: new Date().toISOString(),
-    },
-    {
-      EventType: 'User',
-      Message: 'User messages will show up here!',
-      Timestamp: new Date().toISOString(),
-    },
+    // {
+    //   EventType: 'Error',
+    //   Message: 'Error messages will show up here!',
+    //   Timestamp: new Date().toISOString(),
+    // },
+    // {
+    //   EventType: 'Message',
+    //   Message: 'Messages will show up here!',
+    //   Timestamp: new Date().toISOString(),
+    //   UserName: faker.name.firstName(),
+    // },
+    // {
+    //   EventType: 'System',
+    //   Message: 'System messages will show up here!',
+    //   Timestamp: new Date().toISOString(),
+    // },
+    // {
+    //   EventType: 'User',
+    //   Message: 'User messages will show up here!',
+    //   Timestamp: new Date().toISOString(),
+    // },
   ])
   console.log({ events })
   const addEvent = React.useCallback<(event: LobbyEvent) => void>(

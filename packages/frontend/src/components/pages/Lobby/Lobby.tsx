@@ -16,8 +16,6 @@ const StyledLobby = styled.div`
   display: inline-flex;
   flex-flow: column nowrap;
   height: 100vh;
-  justify-content: start;
-  overflow: hidden;
   width: 600px;
 `
 
@@ -34,21 +32,18 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
     onMessage: ({ data }) => addEvent(parseEvent(JSON.parse(data))),
     onOpen: () => addEvent(systemEvent('You have connected.')),
   })
-  const sendMessage = React.useCallback(
-    (message: string) => {
-      if (message && ws && ws.readyState === WebSocket.OPEN) {
-        try {
-          ws.send(message)
-          addEvent(userEvent(message))
-          return true
-        } catch (e) {
-          console.error('Can not send message. Error: ', e)
-        }
-      }
+  const sendMessage = (message: string) => {
+    if (!message) {
       return false
-    },
-    [ws, addEvent]
-  )
+    }
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      addEvent(errorEvent('You can not send messages right now.'))
+      return false
+    }
+    ws.send(message)
+    addEvent(userEvent(message))
+    return true
+  }
   return (
     <StyledLobby>
       <ChatBar sendMessage={sendMessage} />

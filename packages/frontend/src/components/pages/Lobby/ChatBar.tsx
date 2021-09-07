@@ -17,18 +17,21 @@ const ChatBar: React.FC<{ sendMessage: (message: string) => boolean }> = ({
   const [message, setMessage] = React.useState<string>(
     'Hello WS, I have connected.'
   )
-  const submit = React.useCallback(
-    () => () => {
-      const success = sendMessage(message)
-      if (success) {
-        console.debug('Message sent.')
-        setMessage('')
-      }
-    },
-    [message, sendMessage, setMessage]
-  )
+  const submit = React.useCallback(() => {
+    const messageSent = sendMessage(message)
+    if (messageSent) {
+      console.debug('Message sent.')
+      setMessage('')
+    }
+  }, [message, sendMessage, setMessage])
   return (
-    <StyledChatBar>
+    <StyledChatBar
+      onKeyDown={({ code }) => {
+        if (code === 'Enter') {
+          submit()
+        }
+      }}
+    >
       <Input
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Enter message"
