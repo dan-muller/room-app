@@ -18,7 +18,7 @@ export const Connect: Handler<APIGatewayEvent> = async (event) => {
 
   if (connectionId && roomCode && userName && userId) {
     try {
-      return await connect(connectionId, roomCode, userName, userId)
+      return await connect(connectionId, roomCode, userId, userName)
     } catch (e) {
       return new InternalServerErrorResponse(e.message)
     }

@@ -6,8 +6,8 @@ import { BadRequestResponse, OKResponse, Response } from 'lib/response'
 const connect = async (
   connectionId: string,
   roomCode: string,
-  userName: string,
-  userId: string
+  userId: string,
+  userName: string
 ): Promise<Response> => {
   const log = (...message: any[]) => logger.debug('connect', ...message)
   log({ connectionId, roomCode, userName, userId })

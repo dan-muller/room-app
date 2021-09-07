@@ -57,8 +57,8 @@ describe('dynamoClient', () => {
       const response = await dynamoClient.createConnectEvent(
         ConnectionId,
         RoomCode,
-        UserName,
-        UserId
+        UserId,
+        UserName
       )
       expect(response.ConnectionId).toBe(ConnectionId)
       expect(response.RoomCode).toBe(RoomCode)

@@ -91,12 +91,12 @@ namespace dynamoClient {
     const Item: DisconnectEvent & Item = {
       ConnectionId,
       EventType,
-      RoomCode,
       PK: RoomCode,
+      RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
-      UserName,
       UserId,
+      UserName,
     }
     logger.trace('dynamo.createDisconnectEvent', Item)
 
@@ -131,8 +131,8 @@ namespace dynamoClient {
       RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
-      UserName,
       UserId,
+      UserName,
     }
     log({ Item })
 
