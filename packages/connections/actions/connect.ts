@@ -16,7 +16,7 @@ const connect = async (
   const connectionIds = connectedEvents
     .filter(
       ({ ConnectionId, UserId }) =>
-        ConnectionId !== connectionId && UserId !== connectEvent.UserId
+        ConnectionId !== connectionId && UserId !== userId
     )
     .map((event) => event.ConnectionId)
   const existingUserWithName = connectedEvents
