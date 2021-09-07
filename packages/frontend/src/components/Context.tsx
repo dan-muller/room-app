@@ -17,7 +17,6 @@ const Context = React.createContext<Context>({
 
 const options: CookieAttributes = {
   expires: 999999,
-  httpOnly: process.env.NODE_ENV === 'production',
   sameSite: 'Strict',
   secure: true,
 }
