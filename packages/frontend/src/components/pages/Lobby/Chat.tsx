@@ -54,7 +54,7 @@ const StyledErrorMessage = styled.div`
 `
 const ErrorMessage: React.FC<MessageProps> = ({ message, timestamp }) => (
   <ChatRow timestamp={timestamp} align="center">
-    <StyledErrorMessage>{message}</StyledErrorMessage>
+    <StyledErrorMessage>Error: {message}</StyledErrorMessage>
   </ChatRow>
 )
 

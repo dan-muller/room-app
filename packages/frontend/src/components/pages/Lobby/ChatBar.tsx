@@ -11,9 +11,10 @@ const StyledChatBar = styled.div`
   margin-bottom: 16px;
 `
 
-const ChatBar: React.FC<{ sendMessage: (message: string) => boolean }> = ({
-  sendMessage,
-}) => {
+const ChatBar: React.FC<{
+  ready: boolean
+  sendMessage: (message: string) => boolean
+}> = ({ ready, sendMessage }) => {
   const [message, setMessage] = React.useState<string>(
     'Hello WS, I have connected.'
   )
@@ -33,13 +34,14 @@ const ChatBar: React.FC<{ sendMessage: (message: string) => boolean }> = ({
       }}
     >
       <Input
+        disabled={!ready}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Enter message"
         style={{ flexGrow: 1 }}
         value={message}
       />
       <Button
-        disabled={!message}
+        disabled={!ready || !message}
         onClick={() => submit()}
         style={{ marginLeft: '15px' }}
       >
