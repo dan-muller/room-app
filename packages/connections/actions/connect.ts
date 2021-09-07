@@ -33,8 +33,8 @@ const connect = async (
   const connectEvent = await dynamo.createConnectEvent(
     connectionId,
     roomCode,
-    userName,
-    userId
+    userId,
+    userName
   )
   log({ connectEvent })
 

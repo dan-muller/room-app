@@ -27,8 +27,8 @@ const disconnect = async (connectionId: string): Promise<Response> => {
   const disconnectEvent = await dynamo.createDisconnectEvent(
     connectionId,
     connectEvent.RoomCode,
-    connectEvent.UserName,
-    connectEvent.UserId
+    connectEvent.UserId,
+    connectEvent.UserName
   )
   log({ disconnectEvent })
 

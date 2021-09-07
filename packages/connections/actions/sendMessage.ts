@@ -30,8 +30,8 @@ const sendMessage = async (
   const messageEvent = await dynamo.createMessageEvent(
     connectionId,
     connectEvent.RoomCode,
-    connectEvent.UserName,
     connectEvent.UserId,
+    connectEvent.UserName,
     message
   )
   log({ messageEvent })

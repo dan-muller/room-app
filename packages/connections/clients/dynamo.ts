@@ -39,8 +39,8 @@ namespace dynamoClient {
   export const createConnectEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    UserName: string,
-    UserId: string
+    UserId: string,
+    UserName: string
   ): Promise<ConnectEvent> => {
     const EventType = TypeConnect
     const Item: ConnectEvent & Item = {
@@ -84,8 +84,8 @@ namespace dynamoClient {
   export const createDisconnectEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    UserName: string,
-    UserId: string
+    UserId: string,
+    UserName: string
   ): Promise<DisconnectEvent> => {
     const EventType = TypeDisconnect
     const Item: DisconnectEvent & Item = {
@@ -116,8 +116,8 @@ namespace dynamoClient {
   export const createMessageEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    UserName: string,
     UserId: string,
+    UserName: string,
     Message: string
   ): Promise<MessageEvent> => {
     const log = (...message: any[]) =>
