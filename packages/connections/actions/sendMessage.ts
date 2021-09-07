@@ -7,36 +7,43 @@ const sendMessage = async (
   connectionId: string,
   message: string
 ): Promise<Response> => {
-  logger.debug('sendMessage', { connectionId })
+  const log = (...message: any[]) => logger.debug('sendMessage', ...message)
+  log({ connectionId })
 
   const connectEvent = await dynamo.findConnectEvent(connectionId)
-  const roomCode = connectEvent?.RoomCode
-  logger.debug('sendMessage', { connectEvent, roomCode })
-
-  if (roomCode) {
-    const messageEvent = await dynamo.createMessageEvent(
-      connectionId,
-      roomCode,
-      message
-    )
-    logger.debug('sendMessage', { messageEvent })
-
-    const connectedEvents = await dynamo.listConnected(roomCode)
-    const connectionIds = connectedEvents.map((event) => event.ConnectionId)
-    logger.debug('sendMessage', { connectedEvents, connectionIds })
-
-    const publishEvent = await connections.publishEvent(
-      connectionIds,
-      messageEvent
-    )
-    logger.debug('sendMessage', { publishEvent })
-
-    return new OKResponse(
-      JSON.stringify({ connectEvent, messageEvent, publishEvent })
+  log({ connectEvent })
+  if (!connectEvent) {
+    return new BadRequestResponse(
+      `Connection id "${connectionId}" has not connected to this room.`
     )
   }
-  return new BadRequestResponse(
-    `Connection id "${connectionId}" has no "Connect" event.`
+
+  const connectedEvents = await dynamo.listConnected(connectEvent.RoomCode)
+  const connectionIds = connectedEvents
+    .filter(
+      ({ ConnectionId, UserId }) =>
+        ConnectionId !== connectionId && UserId !== connectEvent.UserId
+    )
+    .map((event) => event.ConnectionId)
+  log({ connectedEvents, connectionIds })
+
+  const messageEvent = await dynamo.createMessageEvent(
+    connectionId,
+    connectEvent.RoomCode,
+    connectEvent.UserId,
+    connectEvent.UserName,
+    message
+  )
+  log({ messageEvent })
+
+  const publishEvent = await connections.publishEvent(
+    connectionIds,
+    messageEvent
+  )
+  log({ publishEvent })
+
+  return new OKResponse(
+    JSON.stringify({ connectEvent, messageEvent, publishEvent })
   )
 }
 

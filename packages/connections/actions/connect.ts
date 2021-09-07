@@ -6,19 +6,24 @@ import { BadRequestResponse, OKResponse, Response } from 'lib/response'
 const connect = async (
   connectionId: string,
   roomCode: string,
-  userName: string,
-  userId: string
+  userId: string,
+  userName: string
 ): Promise<Response> => {
-  logger.debug('connect', { connectionId, roomCode, userName, userId })
+  const log = (...message: any[]) => logger.debug('connect', ...message)
+  log({ connectionId, roomCode, userName, userId })
 
   const connectedEvents = await dynamo.listConnected(roomCode)
-  const connectionIds = connectedEvents.map((event) => event.ConnectionId)
-  logger.debug('connect', { connectedEvents, connectionIds })
-
+  const connectionIds = connectedEvents
+    .filter(
+      ({ ConnectionId, UserId }) =>
+        ConnectionId !== connectionId && UserId !== userId
+    )
+    .map((event) => event.ConnectionId)
   const existingUserWithName = connectedEvents
     .filter((event) => event.UserId !== userId)
     .some((event) => event.UserName === userName)
-  logger.debug('connect', { existingUserWithName })
+  log({ connectedEvents, connectionIds, existingUserWithName })
+
   if (existingUserWithName) {
     return new BadRequestResponse(
       `Cannot connect to room. The name "${userName}" has already been taken.`
@@ -28,16 +33,16 @@ const connect = async (
   const connectEvent = await dynamo.createConnectEvent(
     connectionId,
     roomCode,
-    userName,
-    userId
+    userId,
+    userName
   )
-  logger.debug('connect', { connectEvent })
+  log({ connectEvent })
 
   const publishEvent = await connections.publishEvent(
     connectionIds,
     connectEvent
   )
-  logger.debug('connect', { publishEvent })
+  log({ publishEvent })
 
   return new OKResponse(JSON.stringify({ connectEvent, publishEvent }))
 }

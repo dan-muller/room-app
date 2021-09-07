@@ -39,8 +39,8 @@ namespace dynamoClient {
   export const createConnectEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    UserName: string,
-    UserId: string
+    UserId: string,
+    UserName: string
   ): Promise<ConnectEvent> => {
     const EventType = TypeConnect
     const Item: ConnectEvent & Item = {
@@ -77,39 +77,31 @@ namespace dynamoClient {
 
   export type DisconnectEvent = Omit<Event, 'EventType'> & {
     EventType: typeof TypeDisconnect
-    ForceDisconnect?: boolean
+    UserId: string
+    UserName: string
   }
 
   export const createDisconnectEvent = async (
     ConnectionId: string,
     RoomCode: string,
-    Force?: boolean
+    UserId: string,
+    UserName: string
   ): Promise<DisconnectEvent> => {
     const EventType = TypeDisconnect
     const Item: DisconnectEvent & Item = {
       ConnectionId,
       EventType,
-      RoomCode,
       PK: RoomCode,
+      RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
-      ForceDisconnect: !!Force,
+      UserId,
+      UserName,
     }
-    logger.trace('dynamo.createDisconnectEvent', {
-      ConnectionId,
-      EventType,
-      Item,
-      RoomCode,
-    })
+    logger.trace('dynamo.createDisconnectEvent', Item)
 
     const Result = await dynamo.put({ TableName, Item })
-    logger.trace('dynamo.createDisconnectEvent', {
-      ConnectionId,
-      Item,
-      Result,
-      RoomCode,
-      TableName,
-    })
+    logger.trace('dynamo.createDisconnectEvent', { Result })
 
     logger.info('dynamo.createDisconnectEvent', { Item })
     return Item
@@ -118,12 +110,18 @@ namespace dynamoClient {
   export type MessageEvent = Omit<Event, 'EventType'> & {
     EventType: typeof TypeMessage
     Message: string
+    UserId: string
+    UserName: string
   }
   export const createMessageEvent = async (
     ConnectionId: string,
     RoomCode: string,
+    UserId: string,
+    UserName: string,
     Message: string
   ): Promise<MessageEvent> => {
+    const log = (...message: any[]) =>
+      logger.debug('dynamo.createMessageEvent', ...message)
     const EventType = TypeMessage
     const Item: MessageEvent & Item = {
       ConnectionId,
@@ -133,39 +131,27 @@ namespace dynamoClient {
       RoomCode,
       SK: `ConnectionId:${ConnectionId}|EventType:${EventType}`,
       Timestamp: timestamp.now(),
+      UserId,
+      UserName,
     }
-    logger.debug('dynamo.createMessageEvent', {
-      ConnectionId,
-      EventType,
-      Item,
-      Message,
-      RoomCode,
-    })
+    log({ Item })
 
     const Result = await dynamo.put({ TableName, Item })
-    logger.trace('dynamo.createMessageEvent', {
-      ConnectionId,
-      Item,
-      Message,
-      Result,
-      RoomCode,
-      TableName,
-    })
+    log({ Result })
 
-    logger.debug('dynamo.createMessageEvent', { Item })
     return Item
   }
 
   const mapEventItem = (Item: any): AnyEvent => {
     switch (Item.EventType) {
       case TypeConnect:
-        return <ConnectEvent>Item
+        return Item as ConnectEvent
       case TypeDisconnect:
-        return <DisconnectEvent>Item
+        return Item as DisconnectEvent
       case TypeMessage:
-        return <MessageEvent>Item
+        return Item as MessageEvent
       default:
-        return <Event>{ ...Item, EventType: TypeEvent }
+        return { ...Item, EventType: TypeEvent } as Event
     }
   }
 
@@ -193,7 +179,7 @@ namespace dynamoClient {
     })
 
     const { Items } = Result
-    const Events = Items?.map((i) => mapEventItem(i))
+    const Events = Items?.map(mapEventItem)
     logger.trace('dynamo.listEventsForRoomCode', {
       Events,
       ExpressionAttributeValues,
