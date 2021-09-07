@@ -1,10 +1,12 @@
 import React from 'react'
 
+import useTimeout from 'components/hooks/useTimeout'
+
 export const useWebSocket = (
   url: string,
   handlers: {
     onClose: (event: CloseEvent) => void
-    onError: (event: Event) => void
+    onError: (event: Event | string) => void
     onMessage: (event: MessageEvent) => void
     onOpen: (event: Event) => void
   }
@@ -34,6 +36,12 @@ export const useWebSocket = (
   React.useEffect(() => {
     ws.onopen = onOpen
   }, [ws, onOpen])
+
+  useTimeout(() => {
+    if (ws && ws.readyState !== WebSocket.OPEN) {
+      onError('Unable to connect.')
+    }
+  }, 5000)
 
   return ws
 }

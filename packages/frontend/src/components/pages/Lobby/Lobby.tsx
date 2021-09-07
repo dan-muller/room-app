@@ -10,7 +10,6 @@ import useEvents, {
   userEvent,
 } from './useEvents'
 import { useWebSocket, useWebSocketUrl } from './useWebSocket'
-import useTimeout from '../../hooks/useTimeout'
 
 const StyledLobby = styled.div`
   align-content: center;
@@ -29,8 +28,11 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
   const url = useWebSocketUrl(userName, roomCode)
   const ws = useWebSocket(url, {
     onClose: () => addEvent(systemEvent('You have disconnected.')),
-    onError: () => addEvent(errorEvent('An error has occurred.')),
-    onMessage: ({ data }) => addEvent(parseEvent(JSON.parse(data))),
+    onError: (e) =>
+      addEvent(
+        errorEvent(typeof e === 'string' ? e : 'An error has occurred.')
+      ),
+    onMessage: ({ data }) => addEvent(parseEvent(JSON.parse(data)?.Event)),
     onOpen: () => addEvent(systemEvent('You have connected.')),
   })
   const sendMessage = (message: string) => {
@@ -49,12 +51,6 @@ const Lobby: React.FC<{ userName: string; roomCode: string }> = ({
     () => ws?.readyState === WebSocket.OPEN,
     [ws?.readyState]
   )
-  React.useEffect(() => {}, [ws?.readyState])
-  useTimeout(() => {
-    if (ws && ws.readyState !== WebSocket.OPEN) {
-      addEvent(errorEvent('Unable to connect.'))
-    }
-  }, 5000)
   return (
     <StyledLobby>
       <ChatBar ready={ready} sendMessage={sendMessage} />
